@@ -24,6 +24,7 @@ import com.ff.model.SearchVO;
 import com.ff.model.SponserDetails;
 import com.ff.model.Subjects;
 import com.ff.model.UnlockCourseVO;
+import com.ff.model.UnlockedCourseVO;
 import com.ff.model.UserEducation;
 import com.ff.util.ApplicationConstant;
 import com.ff.util.CountryCodeCache;
@@ -812,6 +813,8 @@ public class CourseDAOImpl implements CourseDAO{
 
  @Override
 	public CourseResultVO unlockCourse(UnlockCourseVO unlockCourseVO) throws SQLException {
+	 /**
+	  * Check if user already unlocked course than just return to course details else deduct points and unlock course*/
 		String checkUnlockQuery = "SELECT count(*) as total from user_unlocked_courses unlock_course "
 				+ " inner join  users reg_user on  unlock_course.user_id = reg_user.id  "
 				+ " where unlock_course.user_id = ? and  unlock_course.course_id = ? " ;
@@ -1032,6 +1035,68 @@ public static void main(String abc[]){
 
 	 
  }
+
+@Override
+public UnlockedCourseVO getUserUnlockedCourses(String sessionToken) {
+	UnlockedCourseVO ulocCrsVo = new UnlockedCourseVO();
+	List<Course> courseList = new ArrayList<Course>();
+	StringBuffer searchQuery = new StringBuffer();
+	searchQuery.append(" SELECT  Courses, Int_Fees, Currency, Duration , Duration_Time , Cost_Savings, Remarks_, WR_Range, ");
+	searchQuery.append(" Cost_Range , Twinning_Program, Recognition , Recognition_Type, Faculty, Course_Type, C_ID, Country ");
+	searchQuery.append(" FROM university_course_attribute ");
+	searchQuery.append(" inner join  user_unlocked_courses uuc  on C_ID = uuc.course_id ");
+	searchQuery.append(" inner join  users usr  on uuc.user_id = usr.id ");
+	searchQuery.append(" inner join  user_session usr_sesion  on usr.id = usr_sesion.user_id ");
+	searchQuery.append("  WHERE usr_sesion.session_token = ?");
+	
+	PreparedStatement statement = null;
+	try {
+		Connection con = dbUtil.getJNDIConnection();		
+		statement = con.prepareStatement(searchQuery.toString());
+		statement.setString(1, sessionToken);
+		logger.debug("SQL :" + statement.toString());
+		ResultSet result = statement.executeQuery();
+		while(result.next()){
+			Course course = new Course ();
+
+			course.setCountry(result.getString("Country"));
+			course.setCourseId(result.getInt("C_ID"));
+			course.setCourseTitle(result.getString("Courses"));
+			course.setCostRange(result.getString("Cost_Range"));
+			course.setDurationTime(result.getString("Duration_Time"));
+			course.setDurationType(result.getString("Duration"));
+			course.setRecognition(result.getString("Recognition"));
+			course.setRecognitionType(result.getString("Recognition_Type"));
+			course.setRemarks(result.getString("Remarks_"));
+			course.setAvgWorldRank(result.getString("WR_Range"));
+			courseList.add(course);
+		}		
+		
+		ulocCrsVo.setData(courseList);
+		ulocCrsVo.setMessage("User unlocked courses successfully loaded");
+		ulocCrsVo.setStatus("OK");
+		ulocCrsVo.setTotalRecords(courseList.size());
+		
+		}catch (SQLException e) {
+			ulocCrsVo.setMessage("Due to some technical problems unable to unlock course. Please try later.");
+			ulocCrsVo.setStatus("FAIL");
+			logger.error(" getUserUnlockedCourses() : ",e); 
+			
+		}finally{
+			closeStatment(statement);
+		}		
+	return ulocCrsVo;
+}
+
+private void closeStatment(PreparedStatement statement) {
+	if(statement != null){
+		try{
+			statement.close();
+		}catch(Exception e){
+			logger.error("closeStatement() : ",e);
+		}
+	}
+}
 	
 	
 	

@@ -10,22 +10,15 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DBUtil {
 
-
+	Logger logger = LoggerFactory.getLogger(CourseDAOImpl.class);
 	private static com.mchange.v2.c3p0.ComboPooledDataSource datasource;
     public static Map<String,String> HSC_EDU_MAP = new HashMap<String,String>(20);
-    
-    static{
-    	HSC_EDU_MAP.put("Pakistan", "PAK_HSC");
-    	HSC_EDU_MAP.put("Saudi Arabia", "KSA_DM_HSC");
-    	HSC_EDU_MAP.put("United Arab Emarat", "UAE_REG_DM_HSC");
-    	HSC_EDU_MAP.put("Iran", "IRAN_DM_HSC");
-    	HSC_EDU_MAP.put("Bangladesh", "BAN_HSC");
-    	HSC_EDU_MAP.put("Philippines", "PHILIP_HSC");
-    	HSC_EDU_MAP.put("Nepal", "NEP_HSC");
-    	HSC_EDU_MAP.put("India", "IND_HSC_ISC_SSC");
-    }
+
 	public Connection getJNDIConnection(){
 	  
 	    
@@ -40,7 +33,7 @@ public class DBUtil {
 	    	  envCtx = (Context) envCtx.lookup("jdbc");
 	    	  datasource = (com.mchange.v2.c3p0.ComboPooledDataSource) envCtx.lookup("FF_DS");
 	    	  result = datasource.getConnection();
-	    	  System.out.println("....Connected to DB....");
+	    	  logger.debug("....Connected to DB....");
 	      }
 	      else {
 	    	  result = datasource.getConnection();

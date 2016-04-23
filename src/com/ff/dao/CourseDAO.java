@@ -8,6 +8,7 @@ import com.ff.model.School;
 import com.ff.model.SearchResultVO;
 import com.ff.model.SearchVO;
 import com.ff.model.UnlockCourseVO;
+import com.ff.model.UnlockedCourseVO;
 
 public interface CourseDAO {
 	public List<School> getAllCountrySchool(int countryId )throws SQLException;
@@ -15,6 +16,8 @@ public interface CourseDAO {
 	public SearchResultVO searchCourses(SearchVO searchVO)throws SQLException;
 
 	public CourseResultVO unlockCourse(UnlockCourseVO unlockCourseVO)throws SQLException;
+
+	public UnlockedCourseVO getUserUnlockedCourses(String sessionToken);
 	
 	
 	

@@ -23,11 +23,11 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
         
   </context-param>
   
- <pre>
+
    <listener>
     <listener-class>com.ff.listener.ExternalConfigLoaderContextListener</listener-class>
   </listener>
- </pre>
+
   
   <listener>
     <listener-class>

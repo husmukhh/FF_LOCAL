@@ -15,11 +15,15 @@ import com.ff.model.CourseResultVO;
 import com.ff.model.School;
 import com.ff.model.SearchResultVO;
 import com.ff.model.SearchVO;
+import com.ff.model.Session;
 import com.ff.model.UnlockCourseVO;
+import com.ff.model.UnlockedCourseVO;
 import com.ff.service.resp.SchoolResposeList;
 
 public class CourseServiceImpl implements CourseService{
 	
+
+
 	Logger logger = LoggerFactory.getLogger(CourseServiceImpl.class);
 	
 	@Context ServletContext context;
@@ -82,7 +86,12 @@ public class CourseServiceImpl implements CourseService{
 	}	
 
 	
-	
+	@Override
+	public Response getUserUnlockedCourses(Session sessionToken) {
+		UnlockedCourseVO unlockedCourseVo = null;
+		unlockedCourseVo = courseDAO.getUserUnlockedCourses(sessionToken.getSessionToken());
+		return Response.ok(unlockedCourseVo).build();
+	}
 	
 	
 	

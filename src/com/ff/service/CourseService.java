@@ -10,6 +10,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.ff.model.SearchVO;
+import com.ff.model.Session;
 import com.ff.model.UnlockCourseVO;
 
 @Produces({"application/json" ,"application/xml"})
@@ -38,7 +39,14 @@ public interface CourseService {
 	@Path("/unlockCourse")	
 	@Produces({MediaType.APPLICATION_JSON})	
 	@Consumes({"application/xml",MediaType.APPLICATION_JSON,"application/x-www-form-urlencoded"})
-	public Response unlockCourse( UnlockCourseVO unlockCourseVO );	
+	public Response unlockCourse( UnlockCourseVO unlockCourseVO );
+	
+	@POST
+	@Path("/getUserUnlockedCourses")	
+	@Produces({MediaType.APPLICATION_JSON})	
+	@Consumes({"application/xml",MediaType.APPLICATION_JSON,"application/x-www-form-urlencoded"})
+	public Response getUserUnlockedCourses( Session sessionToken );	
+	
 	
 }
 
