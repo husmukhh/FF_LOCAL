@@ -60,6 +60,9 @@
 		<property name="dbUtil" ref="dbUtil"/>
 	</bean>
 	
+	<bean id="infoDAO" class="com.ff.dao.InfoDAOImpl">
+		<property name="dbUtil" ref="dbUtil"/>
+	</bean>	
 		
 	<bean id="schoolService"	class="com.ff.service.CourseServiceImpl">
 		<property name="courseDAO" ref="courseDAO"/>
@@ -69,6 +72,10 @@
 		<property name="userDao" ref="userDAO"/>
 	</bean>
 	
+	
+	<bean id="infoService"	class="com.ff.service.InfoServiceImpl">
+		<property name="infoDao" ref="infoDAO"/>
+	</bean>	
 
 	<bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
 	
@@ -112,6 +119,30 @@
   		
   		<jaxrs:serviceBeans>
   			<ref bean="userService"/>
+  		</jaxrs:serviceBeans>
+  		
+		<jaxrs:providers>
+			
+			<!-- <ref bean="adminGISViews"/> -->
+			<ref bean="jacksonProvider"></ref>
+		</jaxrs:providers>
+		
+		<jaxrs:extensionMappings> 
+	      <entry key="xml" value="application/xml" /> 
+	      <entry key="json" value="application/json" /> 
+	    </jaxrs:extensionMappings> 
+	    
+<!-- 	    <jaxrs:features> 
+	      <cxf:logging/> 
+	    </jaxrs:features>  -->
+  	</jaxrs:server>
+
+
+
+  	<jaxrs:server id="infoServiceREST" address="/rest/InfoService">
+  		
+  		<jaxrs:serviceBeans>
+  			<ref bean="infoService"/>
   		</jaxrs:serviceBeans>
   		
 		<jaxrs:providers>
