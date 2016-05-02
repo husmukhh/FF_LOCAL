@@ -17,18 +17,18 @@ import org.slf4j.LoggerFactory;
 import com.ff.model.AppConstants;
 import com.ff.model.Course;
 import com.ff.model.CourseDetails;
-import com.ff.model.CourseResultVO;
 import com.ff.model.School;
-import com.ff.model.SearchResultVO;
-import com.ff.model.SearchVO;
 import com.ff.model.SponserDetails;
 import com.ff.model.Subjects;
-import com.ff.model.UnlockCourseVO;
-import com.ff.model.UnlockedCourseVO;
 import com.ff.model.UserEducation;
 import com.ff.util.ApplicationConstant;
 import com.ff.util.CountryCodeCache;
 import com.ff.util.EducationSystemConstants;
+import com.ff.vo.CourseResultVO;
+import com.ff.vo.SearchResultVO;
+import com.ff.vo.SearchVO;
+import com.ff.vo.UnlockCourseVO;
+import com.ff.vo.UnlockedCourseVO;
 
 public class CourseDAOImpl implements CourseDAO{
 	

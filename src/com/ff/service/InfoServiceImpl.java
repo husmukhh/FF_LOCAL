@@ -11,8 +11,7 @@ public class InfoServiceImpl implements InfoService{
 	
 	@Override
 	public Response getCountryDetails(Country country) {
-		
-		return null;
+		return Response.ok(infoDao.getCountryDetails(country.getCountryCode())).build();
 	}
 
 	public InfoDAO getInfoDao() {

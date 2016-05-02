@@ -11,14 +11,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ff.dao.CourseDAO;
-import com.ff.model.CourseResultVO;
 import com.ff.model.School;
-import com.ff.model.SearchResultVO;
-import com.ff.model.SearchVO;
 import com.ff.model.Session;
-import com.ff.model.UnlockCourseVO;
-import com.ff.model.UnlockedCourseVO;
 import com.ff.service.resp.SchoolResposeList;
+import com.ff.vo.CourseResultVO;
+import com.ff.vo.SearchResultVO;
+import com.ff.vo.SearchVO;
+import com.ff.vo.UnlockCourseVO;
+import com.ff.vo.UnlockedCourseVO;
 
 public class CourseServiceImpl implements CourseService{
 	

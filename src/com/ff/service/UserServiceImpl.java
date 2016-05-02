@@ -8,7 +8,7 @@ import com.ff.model.User;
 import com.ff.model.UserEducation;
 import com.ff.model.UserInfo;
 import com.ff.model.UserInterest;
-import com.ff.model.UserProfileVO;
+import com.ff.vo.UserProfileVO;
 
 public class UserServiceImpl implements UserService {
 	

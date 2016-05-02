@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-	<property name="DEV_HOME" value="D:/apache-tomcat-7.0.62/logs" />
-	<!-- <property name="DEV_HOME" value="/var/lib/tomcat7/logs" /> -->
+	<!-- <property name="DEV_HOME" value="D:/apache-tomcat-7.0.62/logs" /> -->
+	<property name="DEV_HOME" value="/var/lib/tomcat7/logs" /> 
 	
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">

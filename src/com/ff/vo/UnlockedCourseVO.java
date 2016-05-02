@@ -1,9 +1,12 @@
-package com.ff.model;
+package com.ff.vo;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class UnlockedCourseVO {
+import com.ff.model.Course;
+import com.ff.model.ResponseData;
+
+public class UnlockedCourseVO implements ResponseData {
 	private List<Course> data = new ArrayList<Course>();
 	private int pageNo;
 	private String status;

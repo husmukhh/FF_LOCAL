@@ -7,7 +7,7 @@ public class CountryDetails {
 	private String shortSkillIndustry;
 	private String internationalHealthCover;
 	private String emgHelp;
-	private String countrySaftryRating;
+	private String countrySafteyRating;
 	private String visa;
 	private String jobPorspect;
 	private String eduRecognation;
@@ -46,11 +46,12 @@ public class CountryDetails {
 	public void setEmgHelp(String emgHelp) {
 		this.emgHelp = emgHelp;
 	}
-	public String getCountrySaftryRating() {
-		return countrySaftryRating;
+
+	public String getCountrySafteyRating() {
+		return countrySafteyRating;
 	}
-	public void setCountrySaftryRating(String countrySaftryRating) {
-		this.countrySaftryRating = countrySaftryRating;
+	public void setCountrySafteyRating(String countrySafteyRating) {
+		this.countrySafteyRating = countrySafteyRating;
 	}
 	public String getVisa() {
 		return visa;

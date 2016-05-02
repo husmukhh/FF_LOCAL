@@ -9,9 +9,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.ff.model.SearchVO;
 import com.ff.model.Session;
-import com.ff.model.UnlockCourseVO;
+import com.ff.vo.SearchVO;
+import com.ff.vo.UnlockCourseVO;
 
 @Produces({"application/json" ,"application/xml"})
 @Consumes({"application/xml","application/json","application/x-www-form-urlencoded",MediaType.MULTIPART_FORM_DATA})
