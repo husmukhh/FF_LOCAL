@@ -14,6 +14,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.ff.model.AdvanceSearchReq;
 import com.ff.model.AppConstants;
 import com.ff.model.Course;
 import com.ff.model.CourseDetails;
@@ -1096,6 +1097,21 @@ private void closeStatment(PreparedStatement statement) {
 			logger.error("closeStatement() : ",e);
 		}
 	}
+}
+
+@Override
+public SearchResultVO advanceSearchCourses(AdvanceSearchReq advanceSearchVO) {
+	StringBuffer searchQuery = new StringBuffer(); 
+	
+	searchQuery.append(" SELECT  Courses, Int_Fees, Currency, Duration , Duration_Time , Cost_Savings, Remarks_, WR_Range, ");
+	searchQuery.append(" Cost_Range , Twinning_Program, Recognition , Recognition_Type, Faculty, Course_Type, C_ID, Country, ");
+	searchQuery.append(" add_type, add_text, spnsr.sponser_id , spnsr.sponser_name ");
+	searchQuery.append(" FROM university_course_attribute ");
+	searchQuery.append(" left join course_sponser_details csd  on C_ID = csd.course_id ");
+	searchQuery.append(" left join sponser spnsr on spnsr.sponser_id = csd.sponser_id ");
+	searchQuery.append("  WHERE ");
+	searchQuery.append(" courses like '"+ advanceSearchVO.getSearchText()+"%'  AND  " );
+	return null;
 }
 	
 	

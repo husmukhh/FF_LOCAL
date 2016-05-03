@@ -3,6 +3,7 @@ package com.ff.dao;
 import java.sql.SQLException;
 import java.util.List;
 
+import com.ff.model.AdvanceSearchReq;
 import com.ff.model.School;
 import com.ff.vo.CourseResultVO;
 import com.ff.vo.SearchResultVO;
@@ -18,6 +19,8 @@ public interface CourseDAO {
 	public CourseResultVO unlockCourse(UnlockCourseVO unlockCourseVO)throws SQLException;
 
 	public UnlockedCourseVO getUserUnlockedCourses(String sessionToken);
+
+	public SearchResultVO advanceSearchCourses(AdvanceSearchReq advanceSearchVO);
 	
 	
 	

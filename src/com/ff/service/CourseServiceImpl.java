@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ff.dao.CourseDAO;
+import com.ff.model.AdvanceSearchReq;
 import com.ff.model.School;
 import com.ff.model.Session;
 import com.ff.service.resp.SchoolResposeList;
@@ -91,6 +92,13 @@ public class CourseServiceImpl implements CourseService{
 		UnlockedCourseVO unlockedCourseVo = null;
 		unlockedCourseVo = courseDAO.getUserUnlockedCourses(sessionToken.getSessionToken());
 		return Response.ok(unlockedCourseVo).build();
+	}
+
+	@Override
+	public Response searchCourses(AdvanceSearchReq advanceSearchVO) {
+		SearchResultVO responseData = null ;
+		responseData = courseDAO.advanceSearchCourses(advanceSearchVO);
+		return null;
 	}
 	
 	

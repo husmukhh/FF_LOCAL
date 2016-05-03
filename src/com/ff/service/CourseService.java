@@ -9,6 +9,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.ff.model.AdvanceSearchReq;
 import com.ff.model.Session;
 import com.ff.vo.SearchVO;
 import com.ff.vo.UnlockCourseVO;
@@ -46,6 +47,13 @@ public interface CourseService {
 	@Produces({MediaType.APPLICATION_JSON})	
 	@Consumes({"application/xml",MediaType.APPLICATION_JSON,"application/x-www-form-urlencoded"})
 	public Response getUserUnlockedCourses( Session sessionToken );	
+	
+	
+	@POST
+	@Path("/searchCoursesAdvance")	
+	@Produces({MediaType.APPLICATION_JSON})	
+	@Consumes({"application/xml",MediaType.APPLICATION_JSON,"application/x-www-form-urlencoded"})
+	public Response searchCourses( AdvanceSearchReq advanceSearchVO );	
 	
 	
 }
