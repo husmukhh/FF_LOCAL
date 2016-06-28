@@ -4,7 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -17,6 +21,8 @@ import com.ff.model.UserDetails;
 import com.ff.model.UserEducation;
 import com.ff.model.UserInfo;
 import com.ff.model.UserInterest;
+import com.ff.util.EducationSystemConstants;
+import com.ff.vo.EligibityStatus;
 import com.ff.vo.UserProfileVO;
 
 public class UserDAOImpl implements UserDAO {
@@ -24,7 +30,7 @@ public class UserDAOImpl implements UserDAO {
 	
 
 	Logger logger = LoggerFactory.getLogger(UserDAOImpl.class);
-	
+	private static final DateFormat formatter = new SimpleDateFormat("dd/mm/yyyy");
 	DBUtil dbUtil ;
 	@Override
 	public Session authanticateUser(User user){
@@ -73,12 +79,12 @@ public class UserDAOImpl implements UserDAO {
 				}
 				session.setMessage("Successfully logged in.");
 				
-				session.setStatus("OK");
+				session.setStatus("1");
 				con.commit();
 				//session.setUserId(user.getUserId());
 				
 			}else{
-				session.setStatus("FAIL");
+				session.setStatus("0");
 				session.setMessage("Invalid Username or Password,unbale to login. Please try again.");
 				return session;
 			}
@@ -94,7 +100,7 @@ public class UserDAOImpl implements UserDAO {
 				if(sessionStatement != null){
 				sessionStatement.close();
 				}
-				//closeConnection(con);
+				closeConnection(con);
 			} catch (SQLException e) {
 				
 				logger.error(" finnaly :  authanticateUser() : " , e);
@@ -141,7 +147,7 @@ public class UserDAOImpl implements UserDAO {
 					session.setSessionToken(result.getString(1));
 				}
 				
-				session.setStatus("OK");
+				session.setStatus("1");
 				session.setMessage("Thank you for your registration. Welcome to SEEKA.");
 				
 			}else{
@@ -194,12 +200,17 @@ public class UserDAOImpl implements UserDAO {
 			
 			userInfoStatement = con.prepareStatement(SQLInsertQuries.USER_INFO_INSERT);
 			userInfoStatement.setLong(1,userId);
-			userInfoStatement.setString(2, userInfo.getFullName());
-			userInfoStatement.setString(3, userInfo.getSkypeId());
-			userInfoStatement.setString(4, userInfo.getMobileNo());
-			userInfoStatement.setString(5, userInfo.getGender());
-			userInfoStatement.setString(6, userInfo.getCoutOfOrign());
-			userInfoStatement.setString(7, userInfo.getCitizenship());
+			userInfoStatement.setString(2, userInfo.getFirstName());
+			userInfoStatement.setString(3, userInfo.getLastName());
+			if(userInfo.getDob() != null){
+				java.sql.Date sqlDate = new java.sql.Date(formatter.parse(userInfo.getDob()).getTime() );
+				userInfoStatement.setDate(4, sqlDate);
+			}
+			userInfoStatement.setString(5, userInfo.getSkypeId());
+			userInfoStatement.setString(6, userInfo.getMobileNo());
+			userInfoStatement.setString(7, userInfo.getGender());
+			userInfoStatement.setString(8, userInfo.getCoutOfOrign());
+			userInfoStatement.setString(9, userInfo.getCitizenship());
 			logger.debug(" SQL : "+userInfoStatement.toString());
 			int rowCountUserInfo = userInfoStatement.executeUpdate();
 
@@ -218,7 +229,7 @@ public class UserDAOImpl implements UserDAO {
 					deleteExistingStatement.close();
 					userInfoStatement.close();
 				}
-				//closeConnection(con);				
+				closeConnection(con);				
 			}catch (SQLException e) {
 
 				logger.error("finally : saveUserInfo() : ",e);
@@ -258,7 +269,7 @@ public class UserDAOImpl implements UserDAO {
 			try {
 				closeStatement(statement);
 				
-				//closeConnection(con);
+				closeConnection(con);
 			} catch (SQLException e) {
 
 				logger.error("finally : getUserId : ",e);
@@ -296,7 +307,19 @@ public class UserDAOImpl implements UserDAO {
 			userEduStatement.setString(8, userEducation.getIeltsToffel());
 			int rowCountUser = userEduStatement.executeUpdate();
 			
-			if(userEducation.getEduSystem().equals(AppConstants.CAMBRIDGE)){
+			if(EducationSystemConstants.SRI_A_LEV.equals( userEducation.getEduSystem() )
+					|| EducationSystemConstants.MAL_STPM.equals( userEducation.getEduSystem() )
+					|| EducationSystemConstants.SGP_A_LEVE.equals( userEducation.getEduSystem() )
+					|| EducationSystemConstants.UK_A_LEV.equals( userEducation.getEduSystem() )
+					|| EducationSystemConstants.GLOB_A_LEV.equals( userEducation.getEduSystem() )
+					|| EducationSystemConstants.SRI_O_LEV.equals( userEducation.getEduSystem() )
+					|| EducationSystemConstants.MAL_SPM.equals( userEducation.getEduSystem() )
+					|| EducationSystemConstants.SGP_O_LEVE.equals( userEducation.getEduSystem() )
+					|| EducationSystemConstants.UK_O_LEV.equals( userEducation.getEduSystem() )
+					|| EducationSystemConstants.GLOBE_O_LEV.equals( userEducation.getEduSystem() )
+					
+					
+					){
 				for(String subject : userEducation.getCambrigeSubGrds().getSubjects().keySet()){
 					userEduAOLevelStatement = con.prepareStatement(SQLInsertQuries.USER_EDU_A_O_SCORE_INSERT);
 					userEduAOLevelStatement.setString(2, subject);
@@ -306,6 +329,17 @@ public class UserDAOImpl implements UserDAO {
 					userEduAOLevelStatement.close();
 				}
 			}
+			
+			if(userEducation.getEduSystem().equals(AppConstants.CAMBRIDGE_O)){
+				for(String subject : userEducation.getCambrigeSubGrds().getSubjects().keySet()){
+					userEduAOLevelStatement = con.prepareStatement(SQLInsertQuries.USER_EDU_A_O_SCORE_INSERT);
+					userEduAOLevelStatement.setString(2, subject);
+					userEduAOLevelStatement.setLong(1,userId);
+					userEduAOLevelStatement.setString(3,(String)userEducation.getCambrigeSubGrds().getSubjects().get(subject));
+					userEduAOLevelStatement.executeUpdate();
+					userEduAOLevelStatement.close();
+				}
+			}			
 			
 			if(userEducation.getIeltsToffel().equals("Y")){
 				for(String subject : userEducation.getIeltsToffelScore().getSubjects().keySet()){
@@ -331,7 +365,7 @@ public class UserDAOImpl implements UserDAO {
 				if(userId > 0){
 				userEduStatement.close();
 				}
-				//closeConnection(con);				
+				closeConnection(con);				
 			} catch (SQLException e) {
 				logger.error("finally getUserEducation()" , e);
 				return false;	
@@ -364,7 +398,7 @@ public class UserDAOImpl implements UserDAO {
 		saveValues(userCareerStatement , userId, usrInterest.getCareerIntrests());
 
 		userCountryStatement = con.prepareStatement(SQLInsertQuries.USER_COUNTRIES_INTREST);
-		saveValues(userCountryStatement , userId, usrInterest.getCareerIntrests());
+		saveValues(userCountryStatement , userId, usrInterest.getCountryIntrests());
 
 		con.commit();
 		return true;	
@@ -376,6 +410,7 @@ public class UserDAOImpl implements UserDAO {
 				closeStatement(userHobbyStatement);
 				closeStatement(userCountryStatement);
 				closeStatement(userCareerStatement);
+				closeConnection(con);
 			} catch (SQLException e) {
 				logger.error("finally : updateUserInterest() : ",e); 
 			}
@@ -478,7 +513,7 @@ public class UserDAOImpl implements UserDAO {
 		}finally{
 			try {
 				closeStatement(statement);
-				//closeConnection(con);
+				closeConnection(con);
 			} catch (SQLException e) {
 				logger.error("finnally : getUserInfo() : ",e);
 			}
@@ -507,14 +542,18 @@ public class UserDAOImpl implements UserDAO {
 				if(rowAffected > 0) {
 					session  = authanticateUser(user.getUserName() , user.getPassword() , con);
 				}
+			}else{
+				session.setStatus("0");
+				session.setMessage("EmailId or Username already registered.");
+				
 			}
 		} catch (SQLException e) {
-			session.setStatus("FAIL");
+			session.setStatus("0");
 			session.setMessage("Unable to register user. Please try again later");
 
 			logger.error("registerUser() : ",e);
 		} catch (Exception e) {
-			session.setStatus("FAIL");
+			session.setStatus("0");
 			session.setMessage("Unable to register user. Please try again later");
 			
 			logger.error("registerUser() : ",e);
@@ -522,7 +561,7 @@ public class UserDAOImpl implements UserDAO {
 			
 			try {
 				closeStatement(statement);
-				//closeConnection(con);
+				closeConnection(con);
 			} catch (SQLException e) {
 				logger.error("finnaly registerUser() : ",e);
 			}
@@ -553,11 +592,11 @@ public class UserDAOImpl implements UserDAO {
 				return false;
 			}
 		} catch (SQLException e) {
-			session.setStatus("FAIL");
+			session.setStatus("0");
 			session.setMessage("Unable to register user. Please try again later");
 			logger.error("logOutSession() : ",e);
 		} catch (Exception e) {
-			session.setStatus("FAIL");
+			session.setStatus("0");
 			session.setMessage("Unable to register user. Please try again later");
 			logger.error("logOutSession() : ",e);
 		}finally{
@@ -565,7 +604,7 @@ public class UserDAOImpl implements UserDAO {
 			try {
 				if(statement != null)
 				closeStatement(statement);
-				//closeConnection(con);
+				closeConnection(con);
 			} catch (SQLException e) {
 				logger.error("finally : logOutSession() : ",e);
 			}
@@ -580,17 +619,17 @@ public class UserDAOImpl implements UserDAO {
 	public UserProfileVO getUserProfile(String sessionId) {
 		
 		 UserProfileVO userDetailVO = new UserProfileVO();		
-
 	   	 PreparedStatement statement = null;
 		 Connection con = null;
 		
    	     String userProfileQuery = " SELECT " +
    	    	    " usrEd.edu_country, usrEd.edu_institue, usrEd.gpa_score, usrEd.edu_system, usrEd.edu_sys_score, " +
-   	    	    " usrEd.toffel_ielts, usrInfo.full_name, usrInfo.skype_id, usrInfo.mobile_no, usrInfo.gender, " +
-   	    	    " usrInfo.country_origin, usrInfo.citizenship, usr.email, usr_carer.career_txt , usr_carer.job_role" +
+   	    	    " usrEd.toffel_ielts, usrInfo.first_name, usrInfo.last_name, usrInfo.dob,usrInfo.skype_id, usrInfo.mobile_no, usrInfo.gender, " +
+   	    	    " usrInfo.country_origin, usrInfo.citizenship, usr.email, usr_carer.career_txt , usr_carer.job_role , usrIntCount.country_code" +
    	    		" FROM users usr " + 
    	    	    " left join   user_interest_carrer  usr_carer on usr_carer.user_id = usr.id " + 
    	    	    " left join   user_edu  usrEd on usrEd.user_id = usr.id "  +
+   	    	    " left join   user_intrest_country  usrIntCount on usrIntCount.user_id = usr.id "  +
    	    	    " left join   user_info  usrInfo on usrInfo.user_id = usr.id " + 
    	    		" WHERE usr.id = ?"  ; 
    	 
@@ -607,20 +646,24 @@ public class UserDAOImpl implements UserDAO {
 			logger.debug(" SQL : "+statement.toString());
 			while(resultSet.next()){
 				ud = new UserDetails( );
-				ud.setEduCountry(resultSet.getString("edu_country"));
-				ud.setEduInstitute(resultSet.getString("edu_institue"));
-				ud.setGpaScore(resultSet.getString("gpa_score"));
-				ud.setEduSystem(resultSet.getString("edu_system"));
-				ud.setEduSysScore(resultSet.getString("edu_sys_score"));
+				ud.getUserEducation().setEduCountry(resultSet.getString("edu_country"));
+				ud.getUserEducation().setEduInst(resultSet.getString("edu_institue"));
+				ud.getUserEducation().setGpaScore(resultSet.getString("gpa_score"));
+				ud.getUserEducation().setEduSystem(resultSet.getString("edu_system"));
+				ud.getUserEducation().setEduSystemScore(resultSet.getString("edu_sys_score"));
 				ud.setIeltsToeffl(resultSet.getString("toffel_ielts"));
-				ud.setFullName(resultSet.getString("full_name"));
-				ud.setSkypeId(resultSet.getString("skype_id"));
-				ud.setMobileNo(resultSet.getString("mobile_no"));
-				ud.setGender(resultSet.getString("gender"));
-				ud.setCtryOrigin(resultSet.getString("country_origin"));
-				ud.setCitizenship(resultSet.getString("citizenship"));
+				ud.getUserInfo().setFirstName(resultSet.getString("first_name"));
+				ud.getUserInfo().setLastName(resultSet.getString("last_name"));
+				ud.getUserInfo().setDob(formatter.format( new Date(resultSet.getDate("dob").getTime())));
+				ud.getUserInfo().setSkypeId(resultSet.getString("skype_id"));
+				ud.getUserInfo().setMobileNo(resultSet.getString("mobile_no"));
+				ud.getUserInfo().setGender(resultSet.getString("gender"));
+				ud.getUserInfo().setCoutOfOrign(resultSet.getString("country_origin"));
+				ud.getUserInfo().setCitizenship(resultSet.getString("citizenship"));
 				ud.setEmail(resultSet.getString("email"));	
-				ud.setCareerInterest(resultSet.getString("career_txt"));
+				ud.getUserInterest().setCareerIntrests(new String [] {resultSet.getString("career_txt") });
+				ud.getUserInterest().setCountryIntrests(new String [] {resultSet.getString("country_code") });
+				ud.getUserInterest().setJobRole(resultSet.getString("job_role"));
 			}	
 			
 			if(ud != null){
@@ -629,9 +672,11 @@ public class UserDAOImpl implements UserDAO {
 				}
 				
 				getUserHobbies (ud , userId , con);
+				
+				getUserSearchEligibity(ud,userId,con);
 				userDetailVO.setData(ud);
 				userDetailVO.setMessage("User profile successfully retrived.");
-				userDetailVO.setStatus("OK");
+				userDetailVO.setStatus("1");
 			}	
 			
 		
@@ -639,7 +684,7 @@ public class UserDAOImpl implements UserDAO {
 	} catch (SQLException e) {
 		userDetailVO.setData(ud);
 		userDetailVO.setMessage("Some technical issue occured.Please try later.");
-		userDetailVO.setStatus("FAIL");
+		userDetailVO.setStatus("0");
 		logger.error("getUserProfile()",e);
 		} catch (Exception e) {
 
@@ -648,11 +693,43 @@ public class UserDAOImpl implements UserDAO {
 			
 			try {
 				closeStatement(statement);
+				closeConnection(con);
 			} catch (SQLException e) {
 				logger.error("finally : getUserProfile()",e);
 			}
 		}   	    
 		return userDetailVO;
+	}
+
+
+	private void getUserSearchEligibity(UserDetails ud, long userId, Connection con) {
+		if(ud.getUserEducation() != null 
+				&& ud.getUserEducation().getEduSystem() != null 
+				&& !ud.getUserEducation().getEduSystem().isEmpty()){
+
+			String userEligibityQuery = "select  country_name , course_type ," + ud.getUserEducation().getEduSystem() + " from country_eligibility " ;
+			List<EligibityStatus> eligibityStatusList = new ArrayList<>();
+			try {
+				PreparedStatement statement =  con.prepareStatement(userEligibityQuery);
+				logger.debug(" SQL : "+statement.toString());
+				System.out.println(statement.toString());
+		   		ResultSet result = statement.executeQuery();
+		   		EligibityStatus eliStatus = new EligibityStatus();
+		   		 if(result != null ){
+		   			 while(result.next()){
+		   				eliStatus.setCountryName(result.getString("country_name"));
+		   				eliStatus.setCourseType(result.getString("course_type"));
+		   				eliStatus.setStatus(result.getInt(ud.getUserEducation().getEduSystem()));
+		   				eligibityStatusList.add(eliStatus);
+		   				eliStatus = new EligibityStatus();
+		   			 }
+		   		 }
+		   		ud.setUserSearchEligibility(eligibityStatusList);
+		   	}catch(Exception exce){
+		   		logger.error("catch : getUserSearchEligibity() : ",exce);
+		   	}
+
+		}
 	}
 
 
@@ -668,8 +745,13 @@ public class UserDAOImpl implements UserDAO {
 	   		while(result.next()){
 	   			hobbiesList.add(result.getString("hobby_txt"));
 	   		}
-	   		ud.setUserHobies(hobbiesList);
 	   		
+	   		 String [] hobbies = new String [hobbiesList.size()];
+	   		 for(int i = 0 ; i < hobbiesList.size(); i++){
+	   			hobbies[i] = hobbiesList.get(i);
+	   		}
+	   		
+	   		ud.getUserInterest().setHobbies(hobbies);
 	   	}catch(Exception exe){
 			logger.error("getUserHobbies()",exe);
 	   	}finally{
@@ -706,6 +788,7 @@ public class UserDAOImpl implements UserDAO {
 			
 			try {
 				closeStatement(userIeltsTofStm);
+				
 			} catch (SQLException e) {
 				logger.error("setUserLanguageScore()",e);
 			}
@@ -716,6 +799,16 @@ public class UserDAOImpl implements UserDAO {
 	
 	
 	
-	
+	private void closeConnection(Connection con) {
+		
+		if(con != null){
+			try {
+				con.close();
+			} catch (SQLException e) {
+				logger.error("close connection : " , e);
+			}
+		}
+		
+	}	
 	
 }

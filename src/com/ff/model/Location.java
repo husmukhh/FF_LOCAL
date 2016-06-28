@@ -1,21 +1,20 @@
 package com.ff.model;
 
+import com.ff.vo.CountryVO;
+
 public class Location {
 
-	private String country;
-	private String city[];
-	public String getCountry() {
+	private CountryVO country;
+
+	public CountryVO getCountry() {
 		return country;
 	}
-	public void setCountry(String country) {
+
+	public void setCountry(CountryVO country) {
 		this.country = country;
 	}
-	public String[] getCity() {
-		return city;
-	}
-	public void setCity(String[] city) {
-		this.city = city;
-	}
+
+	
 	
 	
 }

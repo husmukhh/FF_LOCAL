@@ -1,19 +1,31 @@
 package com.ff.model;
 
+import java.util.Date;
+
 public class UserInfo implements ResponseData {
-	String fullName;
+	String firstName;
+	String lastName;
+	
 	String skypeId;
 	String mobileNo;
 	String gender;
 	String coutOfOrign;
 	String citizenship;
 	String sessionId;
+	String dob;
 	
-	public String getFullName() {
-		return fullName;
+	
+	public String getLastName() {
+		return lastName;
 	}
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+	public String getFirstName() {
+		return firstName;
+	}
+	public void setFirstName(String fullName) {
+		this.firstName = fullName;
 	}
 
 	public String getSkypeId() {
@@ -52,6 +64,15 @@ public class UserInfo implements ResponseData {
 	public void setSessionId(String sessionId) {
 		this.sessionId = sessionId;
 	}
+	public String getDob() {
+		return dob;
+	}
+	public void setDob(String dob) {
+		this.dob = dob;
+	}
+
+
+
 
 	
 	

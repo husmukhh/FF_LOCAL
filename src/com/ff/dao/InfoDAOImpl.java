@@ -50,7 +50,7 @@ public class InfoDAOImpl implements InfoDAO{
 			countryResult.setMessage("Country information retrived successfully.");
 			
 			if(countryDetails.getCountryId() > 0)
-				countryResult.setStatus("OK");
+				countryResult.setStatus("1");
 			else{
 				countryResult.setStatus("FAILED");
 				countryResult.setMessage("Unable to retrive country info. Country Code not found :" + countryCode);
@@ -62,6 +62,7 @@ public class InfoDAOImpl implements InfoDAO{
 			countryResult.setStatus("FAILED");			
 		}finally{
 			closeStatement(statement);
+			closeConnection(con);
 		}
 		
 		return countryResult;
@@ -86,5 +87,15 @@ public class InfoDAOImpl implements InfoDAO{
 	}
 
 	
-	
+	private void closeConnection(Connection con) {
+		
+		if(con != null){
+			try {
+				con.close();
+			} catch (SQLException e) {
+				logger.error("close connection : " , e);
+			}
+		}
+		
+	}	
 }

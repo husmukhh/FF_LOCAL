@@ -10,7 +10,7 @@ public interface EducationSystemConstants {
 	String MAL_STPM = "MAL_STPM";
 	String MAL_SPM = "MAL_SPM";
 	String SGP_A_LEVE = "SGP_A_LEVE";
-	String SGP_O_LEV = "SGP_O_LEV";
+	String SGP_O_LEVE = "SGP_O_LEV";
 	String GLOB_IB = "GLOB_IB";
 	String THA_MathayomSuksa_5_6 = "THA_MathayomSuksa_5_6";
 	String INDO_SMU = "INDO_SMU";

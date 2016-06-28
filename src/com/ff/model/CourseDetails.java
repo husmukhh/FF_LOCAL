@@ -15,6 +15,17 @@ public class CourseDetails extends Course{
 	private String website;
 	private String worldRanking;
 	
+	
+	
+
+	
+	private UniversityInfo  universityInfo = new  UniversityInfo();
+	
+
+	
+	
+	
+	
 
 	public String getUniversity() {
 		return university;
@@ -88,5 +99,15 @@ public class CourseDetails extends Course{
 	public void setWorldRanking(String worldRanking) {
 		this.worldRanking = worldRanking;
 	}
+	
 
+	public UniversityInfo getUniversityInfo() {
+		return universityInfo;
+	}
+
+
+
+	
+	
+	
 }

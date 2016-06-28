@@ -2,57 +2,34 @@ package com.ff.model;
 
 import java.util.List;
 
+import com.ff.vo.EligibityStatus;
+
 public class UserDetails {
-	private String eduCountry;
-	private String eduInstitute;
-	private String gpaScore;
-	private String eduSystem;
-	private String eduSysScore;
+
+
+
+
 	private String ieltsToeffl;
+	
 	private float read;
 	private float write;
 	private float speak;
 	private float listen;
 	private float overall;
-	private String careerInterest;
-	private String countryInterests;
-	private List userHobies;
-	private String fullName;
-	private String skypeId;
-	private String mobileNo;
-	private String gender;
-	private String ctryOrigin;
-	private String citizenship;
+	
+	private UserInterest userInterest = new UserInterest();
+	
 	private String email;
-	public String getEduCountry() {
-		return eduCountry;
+
+	private UserEducation userEducation = new UserEducation();
+	private UserInfo userInfo = new UserInfo();;
+	private List<EligibityStatus> userSearchEligibility;
+	
+	public UserEducation getUserEducation() {
+		return userEducation;
 	}
-	public void setEduCountry(String eduCountry) {
-		this.eduCountry = eduCountry;
-	}
-	public String getEduInstitute() {
-		return eduInstitute;
-	}
-	public void setEduInstitute(String eduInstitute) {
-		this.eduInstitute = eduInstitute;
-	}
-	public String getGpaScore() {
-		return gpaScore;
-	}
-	public void setGpaScore(String gpaScore) {
-		this.gpaScore = gpaScore;
-	}
-	public String getEduSystem() {
-		return eduSystem;
-	}
-	public void setEduSystem(String eduSystem) {
-		this.eduSystem = eduSystem;
-	}
-	public String getEduSysScore() {
-		return eduSysScore;
-	}
-	public void setEduSysScore(String eduSysScore) {
-		this.eduSysScore = eduSysScore;
+	public void setUserEducation(UserEducation userEducation) {
+		this.userEducation = userEducation;
 	}
 	public String getIeltsToeffl() {
 		return ieltsToeffl;
@@ -90,66 +67,36 @@ public class UserDetails {
 	public void setOverall(float overall) {
 		this.overall = overall;
 	}
-	public String getCareerInterest() {
-		return careerInterest;
-	}
-	public void setCareerInterest(String careerInterest) {
-		this.careerInterest = careerInterest;
-	}
-	public String getCountryInterests() {
-		return countryInterests;
-	}
-	public void setCountryInterests(String countryInterests) {
-		this.countryInterests = countryInterests;
-	}
-	public List getUserHobies() {
-		return userHobies;
-	}
-	public void setUserHobies(List userHobies) {
-		this.userHobies = userHobies;
-	}
-	public String getFullName() {
-		return fullName;
-	}
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
-	}
-	public String getSkypeId() {
-		return skypeId;
-	}
-	public void setSkypeId(String skypeId) {
-		this.skypeId = skypeId;
-	}
-	public String getMobileNo() {
-		return mobileNo;
-	}
-	public void setMobileNo(String mobileNo) {
-		this.mobileNo = mobileNo;
-	}
-	public String getGender() {
-		return gender;
-	}
-	public void setGender(String gender) {
-		this.gender = gender;
-	}
-	public String getCtryOrigin() {
-		return ctryOrigin;
-	}
-	public void setCtryOrigin(String ctryOrigin) {
-		this.ctryOrigin = ctryOrigin;
-	}
-	public String getCitizenship() {
-		return citizenship;
-	}
-	public void setCitizenship(String citizenship) {
-		this.citizenship = citizenship;
-	}
+
+	
 	public String getEmail() {
 		return email;
 	}
 	public void setEmail(String email) {
 		this.email = email;
 	}
+	public UserInfo getUserInfo() {
+		return userInfo;
+	}
+	public void setUserInfo(UserInfo userInfo) {
+		this.userInfo = userInfo;
+	}
+	public UserInterest getUserInterest() {
+		return userInterest;
+	}
+	public void setUserInterest(UserInterest userInterest) {
+		this.userInterest = userInterest;
+	}
+	public List<EligibityStatus> getUserSearchEligibility() {
+		return userSearchEligibility;
+	}
+	public void setUserSearchEligibility(List<EligibityStatus> userSearchEligibility) {
+		this.userSearchEligibility = userSearchEligibility;
+	}
+
+	
+
+	
 	
 	
 }

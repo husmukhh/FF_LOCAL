@@ -3,8 +3,8 @@ package com.ff.dao;
 public interface SQLInsertQuries {
 
 	String SESSION_INSERT = "INSERT INTO    user_session ( session_token, session_status, user_id) VALUES ( ( SELECT  MD5( ROUND( UNIX_TIMESTAMP( CURTIME(4) ) * 1000 ) ) ) ,'ACT' , ?) ";
-	String USER_INFO_INSERT = "INSERT INTO user_info ( user_id,full_name,skype_id,mobile_no,gender,country_origin,citizenship) "
-			+ "VALUES (? , ? , ? , ? ,? , ? , ? ) ";
+	String USER_INFO_INSERT = "INSERT INTO user_info ( user_id,first_name,last_name,dob,skype_id,mobile_no,gender,country_origin,citizenship) "
+			+ "VALUES (? , ? , ? , ? ,? , ? , ? , ? , ? ) ";
 	String USER_INSERT = "INSERT INTO users (username,email,password) values(?,?,?) ";
 	String USER_HOBBY_INTEREST = "INSERT INTO user_interest_hobby(user_id,hobby_txt) values(?,?)";
 	String USER_CAREER_INTEREST = "INSERT INTO user_interest_carrer(user_id,career_txt , job_role) values(?,?,?)";

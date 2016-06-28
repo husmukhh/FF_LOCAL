@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,7 @@ import org.slf4j.LoggerFactory;
 public class DBUtil {
 
 	Logger logger = LoggerFactory.getLogger(CourseDAOImpl.class);
-	private static com.mchange.v2.c3p0.ComboPooledDataSource datasource;
+	private static DataSource datasource;
     public static Map<String,String> HSC_EDU_MAP = new HashMap<String,String>(20);
 
 	public Connection getJNDIConnection(){
@@ -31,7 +32,7 @@ public class DBUtil {
 	       
 	      if (datasource == null) {
 	    	  envCtx = (Context) envCtx.lookup("jdbc");
-	    	  datasource = (com.mchange.v2.c3p0.ComboPooledDataSource) envCtx.lookup("FF_DS");
+	    	  datasource =  (DataSource)envCtx.lookup("FF_DS");
 	    	  result = datasource.getConnection();
 	    	  logger.debug("....Connected to DB....");
 	      }

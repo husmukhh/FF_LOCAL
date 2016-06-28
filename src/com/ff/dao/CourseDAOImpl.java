@@ -18,6 +18,7 @@ import com.ff.model.AdvanceSearchReq;
 import com.ff.model.AppConstants;
 import com.ff.model.Course;
 import com.ff.model.CourseDetails;
+import com.ff.model.Location;
 import com.ff.model.School;
 import com.ff.model.SponserDetails;
 import com.ff.model.Subjects;
@@ -25,6 +26,7 @@ import com.ff.model.UserEducation;
 import com.ff.util.ApplicationConstant;
 import com.ff.util.CountryCodeCache;
 import com.ff.util.EducationSystemConstants;
+import com.ff.vo.CountryVO;
 import com.ff.vo.CourseResultVO;
 import com.ff.vo.SearchResultVO;
 import com.ff.vo.SearchVO;
@@ -41,9 +43,8 @@ public class CourseDAOImpl implements CourseDAO{
 	public List<School> getAllCountrySchool(int countryId) throws SQLException{
 		List<School> schoolList = new ArrayList<School>();
 		Statement statement = null;
+		Connection con = dbUtil.getJNDIConnection();
 		try {
-			
-			Connection con = dbUtil.getJNDIConnection();
 			
 			statement = con.createStatement();
 			ResultSet result = statement.executeQuery(SQLSelectQueries.SELECT_COUNTRY);
@@ -61,6 +62,7 @@ public class CourseDAOImpl implements CourseDAO{
 		}finally {
 			if(statement != null){
 				statement.close();
+				closeConnection(con);
 			}
 		}
 		
@@ -83,10 +85,11 @@ public class CourseDAOImpl implements CourseDAO{
 		
 		List<Course> courseList = new ArrayList<Course>();
 		SearchResultVO responseData = new SearchResultVO();
+		Connection con = dbUtil.getJNDIConnection();
 		logger.debug(" in searchCourses(SearchVO searchVO) ");
 		  try {
 				
-			Connection con = dbUtil.getJNDIConnection();		
+					
 			
 			searchVO.setSearchText(searchVO.getSearchText().replace("!", "!!").replace("%", "!%").replace("_", "!_").replace("[", "![")); 
 			
@@ -104,12 +107,12 @@ public class CourseDAOImpl implements CourseDAO{
 
 			
 			if(courseList != null && courseList.size() > 0){
-				responseData.setStatus("OK");
+				responseData.setStatus("1");
 				responseData.setPageNo(searchVO.getPageNo());
 				responseData.setData(courseList);
 				responseData.setMessage("Results found for your search criteria.");
 			}else{
-				responseData.setStatus("FAIL");
+				responseData.setStatus("0");
 				responseData.setPageNo(searchVO.getPageNo());
 				responseData.setData(null);
 				responseData.setMessage("No results found. Please make sure your education information is complete. Try again later.");
@@ -119,6 +122,8 @@ public class CourseDAOImpl implements CourseDAO{
 			return responseData;
 		  }catch(Exception exe){
 			  exe.printStackTrace();
+		  }finally{
+			  closeConnection(con);
 		  }
 			
 			return null;
@@ -154,439 +159,7 @@ public class CourseDAOImpl implements CourseDAO{
 					userEduSystemScore = userEdu.getEduSystemScore().replace("%", "");
 				
 				
-				switch (userEdu.getEduSystem()){
-				
-				case EducationSystemConstants.BAN_HSC :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.BAN_HSC);
-					
-					searchQuery.append(" REPLACE (").append(EducationSystemConstants.BAN_HSC ).append(",'%','') <= ").append(userEduSystemScore);
-					countQuery.append(" REPLACE (").append(EducationSystemConstants.BAN_HSC ).append(",'%','') <= ").append(userEduSystemScore);
-					
-					searchQuery.append(" AND  REPLACE (").append(EducationSystemConstants.BAN_HSC ).append(",'%','') > ").append(0);
-					countQuery.append(" AND REPLACE (").append(EducationSystemConstants.BAN_HSC ).append(",'%','') > ").append(0);					
-					break;
-				}
-				case EducationSystemConstants.CHINA_GAO_ER : {
-					logger.debug(" search() Education System :  " + EducationSystemConstants.CHINA_GAO_ER);
-					searchQuery.append(" ").append(EducationSystemConstants.CHINA_GAO_ER ).append(" <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.CHINA_GAO_ER ).append(" <= ").append(userEdu.getEduSystemScore());
-
-
-					searchQuery.append(" AND ").append(EducationSystemConstants.CHINA_GAO_ER ).append(" > ").append(0);
-					countQuery.append(" AND ").append(EducationSystemConstants.CHINA_GAO_ER ).append(" > ").append(0);
-					break;
-					}
-				case EducationSystemConstants.CHINA_GAOKAO_Gao_San: {
-					logger.debug(" search() Education System :  " + EducationSystemConstants.CHINA_GAOKAO_Gao_San);
-					searchQuery.append(" ").append(EducationSystemConstants.CHINA_GAOKAO_Gao_San ).append(" <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.CHINA_GAO_ER ).append(" <= ").append(userEdu.getEduSystemScore());
-					
-					
-					searchQuery.append(" AND ").append(EducationSystemConstants.CHINA_GAOKAO_Gao_San ).append(" > ").append(0);
-					countQuery.append(" AND ").append(EducationSystemConstants.CHINA_GAO_ER ).append(" > ").append(0);
-					
-					break;
-					}
-				case EducationSystemConstants.GLOB_A_LEV : {
-					logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_A_LEV);
-					 List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
-					 Collections.sort(subjGradeList);
-					 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
-						 String grade = subjGradeList.get(i);
-						 grade = grade.replace("+", "");
-						 grade = grade.replace("-", "");
-						 
-						 if( i  == subjGradeList.size()-3	){
-							 searchQuery.append(" UPPER(").append(EducationSystemConstants.GLOB_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
-						 	 countQuery.append(" UPPER(").append(EducationSystemConstants.GLOB_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");}
-						 else{
-							 searchQuery.append(" UPPER(").append(EducationSystemConstants.GLOB_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
-						 	 countQuery.append(" UPPER(").append(EducationSystemConstants.GLOB_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
-						 	}
-
-					 }
-					break;
-					}
-				case EducationSystemConstants.GLOB_DEGREE : {
-					logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_DEGREE);
-					searchQuery.append(" ").append(EducationSystemConstants.GLOB_DEGREE ).append(" <=").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.GLOB_DEGREE ).append(" <=").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND ").append(EducationSystemConstants.GLOB_DEGREE ).append(" > ").append(0);
-					countQuery.append(" AND ").append(EducationSystemConstants.GLOB_DEGREE ).append(" > ").append(0);					
-					break;
-					}
-				case EducationSystemConstants.GLOB_DIPLOMA : {
-					logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_DIPLOMA);
-					searchQuery.append(" ").append(EducationSystemConstants.GLOB_DIPLOMA ).append(" <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.GLOB_DIPLOMA ).append(" <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND ").append(EducationSystemConstants.GLOB_DIPLOMA ).append(" > ").append(0);
-					countQuery.append(" AND ").append(EducationSystemConstants.GLOB_DIPLOMA ).append(" > ").append(0);					
-					break;
-					}
-				case EducationSystemConstants.GLOB_FIRST_YEAR : {
-					logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_FIRST_YEAR);
-					searchQuery.append(" ").append(EducationSystemConstants.GLOB_FIRST_YEAR ).append(" <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.GLOB_FIRST_YEAR ).append(" <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND ").append(EducationSystemConstants.GLOB_FIRST_YEAR ).append(" > ").append(0);
-					countQuery.append(" AND ").append(EducationSystemConstants.GLOB_FIRST_YEAR ).append(" > ").append(0);					
-					break;
-					}
-				case EducationSystemConstants.GLOB_GPA :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_GPA);					
-					searchQuery.append(" ").append(EducationSystemConstants.GLOB_GPA ).append(" <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.GLOB_GPA ).append(" <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND ").append(EducationSystemConstants.GLOB_GPA ).append(" > ").append(0);
-					countQuery.append(" AND ").append(EducationSystemConstants.GLOB_GPA ).append(" > ").append(0);					
-					break;
-					}
-				case EducationSystemConstants.GLOB_IB :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_IB);					
-					searchQuery.append(" ").append(EducationSystemConstants.GLOB_IB ).append(" <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.GLOB_IB ).append(" <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND ").append(EducationSystemConstants.GLOB_IB ).append(" > ").append(0);
-					countQuery.append(" AND ").append(EducationSystemConstants.GLOB_IB ).append(" > ").append(0);					
-					break;
-					}
-				case EducationSystemConstants.GLOB_IF :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_IF);					
-					searchQuery.append(" ").append(EducationSystemConstants.GLOB_IF ).append(" <=").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.GLOB_IF ).append(" <=").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND ").append(EducationSystemConstants.GLOB_IF ).append(" > ").append(0);
-					countQuery.append(" AND ").append(EducationSystemConstants.GLOB_IF ).append(" > ").append(0);					
-					break;
-					}
-				case EducationSystemConstants.GLOB_SECOND_YEAR :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_SECOND_YEAR);
-					searchQuery.append(" ").append(EducationSystemConstants.GLOB_SECOND_YEAR ).append(" <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.GLOB_SECOND_YEAR ).append(" <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND ").append(EducationSystemConstants.GLOB_SECOND_YEAR ).append(" > ").append(0);
-					countQuery.append(" AND ").append(EducationSystemConstants.GLOB_SECOND_YEAR ).append(" > ").append(0);
-					
-					break;
-					}
-				case EducationSystemConstants.GLOBE_O_LEV :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.GLOBE_O_LEV);
-					searchQuery.append(" ").append(EducationSystemConstants.GLOBE_O_LEV ).append(" <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.GLOBE_O_LEV ).append(" <= ").append(userEdu.getEduSystemScore());
-					break;
-					}
-				case EducationSystemConstants.IND_HSC_ISC_SSC :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.IND_HSC_ISC_SSC);
-					searchQuery.append(" REPLACE (").append(EducationSystemConstants.IND_HSC_ISC_SSC ).append(",'%','') <= ").append(userEduSystemScore);
-					countQuery.append(" REPLACE (").append(EducationSystemConstants.IND_HSC_ISC_SSC ).append(",'%','') <= ").append(userEduSystemScore);
-					
-					searchQuery.append(" AND  REPLACE (").append(EducationSystemConstants.IND_HSC_ISC_SSC ).append(",'%','') > ").append(0);
-					countQuery.append(" AND REPLACE (").append(EducationSystemConstants.IND_HSC_ISC_SSC ).append(",'%','') > ").append(0);
-					
-					break;
-					}
-				case EducationSystemConstants.INDO_SMU :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.INDO_SMU);
-					searchQuery.append(" ").append(EducationSystemConstants.INDO_SMU ).append(" <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.INDO_SMU ).append(" <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND ").append(EducationSystemConstants.INDO_SMU ).append(" > ").append( 0 );
-					countQuery.append(" AND ").append(EducationSystemConstants.INDO_SMU ).append(" > ").append( 0 );					
-					break;
-					}
-				case EducationSystemConstants.IRAN_DM_HSC :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.IRAN_DM_HSC);
-					searchQuery.append(" REPLACE (").append(EducationSystemConstants.IRAN_DM_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" REPLACE (").append(EducationSystemConstants.IRAN_DM_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND REPLACE (").append(EducationSystemConstants.IRAN_DM_HSC ).append(",'%','') > ").append(0);
-					countQuery.append(" AND REPLACE (").append(EducationSystemConstants.IRAN_DM_HSC ).append(",'%','') > ").append(0);
-					
-					break;
-					}
-				case EducationSystemConstants.JAPAN_KSS :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.JAPAN_KSS);
-					searchQuery.append(" ").append(EducationSystemConstants.JAPAN_KSS ).append(" <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.JAPAN_KSS ).append(" <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND ").append(EducationSystemConstants.JAPAN_KSS ).append(" > ").append(0);
-					countQuery.append(" AND ").append(EducationSystemConstants.JAPAN_KSS ).append(" > ").append(0);
-					
-					break;
-					}
-				case EducationSystemConstants.KSA_DM_HSC :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.KSA_DM_HSC);
-					searchQuery.append(" REPLACE (").append(EducationSystemConstants.KSA_DM_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" REPLACE (").append(EducationSystemConstants.KSA_DM_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND REPLACE (").append(EducationSystemConstants.KSA_DM_HSC ).append(",'%','') > ").append(0);
-					countQuery.append(" AND REPLACE (").append(EducationSystemConstants.KSA_DM_HSC ).append(",'%','') > ").append(0);					
-					break;
-					}
-				case EducationSystemConstants.MAL_SPM :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.MAL_SPM);
-					searchQuery.append(" ").append(EducationSystemConstants.MAL_SPM ).append(" <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.MAL_SPM ).append(" <= ").append(userEdu.getEduSystemScore());
-					break;
-					}
-				case EducationSystemConstants.MAL_STPM :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.MAL_STPM);
-					List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
-					 Collections.sort(subjGradeList);
-					 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
-						 String grade = subjGradeList.get(i);
-						 grade = grade.replace("+", "");
-						 grade = grade.replace("-", "");
-						 
-						 if( i  == subjGradeList.size()-3	){
-							 searchQuery.append(" UPPER(").append(EducationSystemConstants.MAL_STPM_).append(i+1).append( ") <= '").append(grade.toUpperCase()).append("'  ");
-						 	 countQuery.append(" UPPER(").append(EducationSystemConstants.MAL_STPM_).append(i+1).append( ") <= '").append(grade.toUpperCase()).append("'  ");}
-						 else{
-							 searchQuery.append(" UPPER(").append(EducationSystemConstants.MAL_STPM_).append(i+1).append( ") <= '").append(grade.toUpperCase()).append("' AND ");
-							 countQuery.append(" UPPER(").append(EducationSystemConstants.MAL_STPM_).append(i+1).append( ") <= '").append(grade.toUpperCase()).append("' AND ");
-							 }
-
-					 }
-					break;
-					}
-				case EducationSystemConstants.NEP_HSC :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.NEP_HSC);
-					searchQuery.append(" REPLACE (").append(EducationSystemConstants.NEP_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" REPLACE (").append(EducationSystemConstants.NEP_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND REPLACE (").append(EducationSystemConstants.NEP_HSC ).append(",'%','') > ").append(0);
-					countQuery.append(" AND REPLACE (").append(EducationSystemConstants.NEP_HSC ).append(",'%','') > ").append(0);					
-					break;
-					}
-				case EducationSystemConstants.PAK_HSC :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.PAK_HSC);
-					searchQuery.append(" REPLACE (").append(EducationSystemConstants.PAK_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" REPLACE (").append(EducationSystemConstants.PAK_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND  REPLACE (").append(EducationSystemConstants.PAK_HSC ).append(",'%','') > ").append(0);
-					countQuery.append(" AND REPLACE (").append(EducationSystemConstants.PAK_HSC ).append(",'%','') > ").append(0);
-					
-					break;
-					}
-				case EducationSystemConstants.PHILIP_HSC :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.PHILIP_HSC);
-					searchQuery.append(" REPLACE (").append(EducationSystemConstants.PHILIP_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" REPLACE (").append(EducationSystemConstants.PHILIP_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND REPLACE (").append(EducationSystemConstants.PHILIP_HSC ).append(",'%','') > ").append(0);
-					countQuery.append(" AND REPLACE (").append(EducationSystemConstants.PHILIP_HSC ).append(",'%','') > ").append(0);
-					
-					break;
-					}
-				case EducationSystemConstants.SAT_USA :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.SAT_USA);
-					searchQuery.append(" ").append(EducationSystemConstants.SAT_USA ).append(" <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.SAT_USA ).append(" <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND ").append(EducationSystemConstants.SAT_USA ).append(" > ").append(0);
-					countQuery.append(" AND ").append(EducationSystemConstants.SAT_USA ).append(" > ").append(0);					
-					break;
-					}
-				case EducationSystemConstants.SGP_A_LEVE :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.SGP_A_LEVE);
-					List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
-					 Collections.sort(subjGradeList);
-					 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
-						 String grade = subjGradeList.get(i);
-						 grade = grade.replace("+", "");
-						 grade = grade.replace("-", "");
-						 
-						 if( i  == subjGradeList.size()-3	){
-							 searchQuery.append(" UPPER(").append(EducationSystemConstants.SGP_A_LEVE_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
-							 countQuery.append(" UPPER(").append(EducationSystemConstants.SGP_A_LEVE_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
-							 }
-						 else{
-							 searchQuery.append(" UPPER(").append(EducationSystemConstants.SGP_A_LEVE_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
-							 countQuery.append(" UPPER(").append(EducationSystemConstants.SGP_A_LEVE_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
-							 }
-
-					 }
-					break;
-					}
-				case EducationSystemConstants.SGP_O_LEV :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.SGP_O_LEV);
-					searchQuery.append(" ").append(EducationSystemConstants.SGP_O_LEV ).append(" >= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.SGP_O_LEV ).append(" >= ").append(userEdu.getEduSystemScore());
-					break;
-					}
-				case EducationSystemConstants.SRI_A_LEV :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.SRI_A_LEV);
-					List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
-					 Collections.sort(subjGradeList);
-					 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
-						 String grade = subjGradeList.get(i);
-						 grade = grade.replace("+", "");
-						 grade = grade.replace("-", "");
-						 if( i  == subjGradeList.size()-3	){
-							 searchQuery.append(" UPPER(").append(EducationSystemConstants.SRI_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
-							 countQuery.append(" UPPER(").append(EducationSystemConstants.SRI_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
-							 }
-						 else{
-							 searchQuery.append(" UPPER(").append(EducationSystemConstants.SRI_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
-							 countQuery.append(" UPPER(").append(EducationSystemConstants.SRI_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
-							 }
-					 }
-					break;
-					}
-				case EducationSystemConstants.SRI_O_LEV :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.SRI_O_LEV);
-					searchQuery.append(" ").append(EducationSystemConstants.SRI_O_LEV ).append(" >= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.SRI_O_LEV ).append(" >= ").append(userEdu.getEduSystemScore());
-					break;
-					}
-				case EducationSystemConstants.THA_MathayomSuksa_5_6 :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.THA_MathayomSuksa_5_6);
-					searchQuery.append(" ").append(EducationSystemConstants.THA_MathayomSuksa_5_6 ).append(" <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.THA_MathayomSuksa_5_6 ).append(" <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND ").append(EducationSystemConstants.THA_MathayomSuksa_5_6 ).append(" > ").append(0);
-					countQuery.append(" AND ").append(EducationSystemConstants.THA_MathayomSuksa_5_6 ).append(" > ").append(0);
-					
-					break;
-					}
-				case EducationSystemConstants.UAE_REG_DM_HSC :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.UAE_REG_DM_HSC);
-					searchQuery.append(" ").append(EducationSystemConstants.UAE_REG_DM_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.UAE_REG_DM_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" AND ").append(EducationSystemConstants.UAE_REG_DM_HSC ).append(",'%','') > ").append(0);
-					countQuery.append(" AND ").append(EducationSystemConstants.UAE_REG_DM_HSC ).append(",'%','') > ").append(0);
-					
-					break;
-					}
-				case EducationSystemConstants.UK_A_LEV :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.UK_A_LEV);
-					List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
-					 Collections.sort(subjGradeList);
-					 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
-						 String grade = subjGradeList.get(i);
-						 
-						 grade = grade.replace("+", "");
-						 grade = grade.replace("-", "");
-						 if( i  == subjGradeList.size()-3	){
-							 searchQuery.append(" UPPER(").append(EducationSystemConstants.UK_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
-							 countQuery.append(" UPPER(").append(EducationSystemConstants.UK_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
-							 }
-						 else{
-							 searchQuery.append(" UPPER(").append(EducationSystemConstants.UK_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
-							 countQuery.append(" UPPER(").append(EducationSystemConstants.UK_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
-							 }
-
-					 }
-					break;
-					}
-				case EducationSystemConstants.UK_O_LEV :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.UK_O_LEV);
-					searchQuery.append(" ").append(EducationSystemConstants.UK_O_LEV ).append(" >= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.UK_O_LEV ).append(" >= ").append(userEdu.getEduSystemScore());
-					break;
-					}
-				case EducationSystemConstants.US_GPA :{
-					logger.debug(" search() Education System :  " + EducationSystemConstants.US_GPA);
-					searchQuery.append(" ").append(EducationSystemConstants.US_GPA ).append(" <= ").append(userEdu.getEduSystemScore());
-					countQuery.append(" ").append(EducationSystemConstants.US_GPA ).append(" <= ").append(userEdu.getEduSystemScore());
-					
-					searchQuery.append(" ").append(EducationSystemConstants.US_GPA ).append(" > ").append(0);
-					countQuery.append(" ").append(EducationSystemConstants.US_GPA ).append(" > ").append(0);					
-					break;
-					}
-
-				}
-				
-				
-				if("Y".equals( userEdu.getIsEngMedium() )){
-					
-				}else
-				if("IELTS".equalsIgnoreCase( userEdu.getIeltsToffel() )){
-					List<String> subjGradeList = new ArrayList( userEdu.getIeltsToffelScore().getSubjects().values()) ;
-					 Collections.sort(subjGradeList);
-					 for(String subjName : userEdu.getCambrigeSubGrds().getSubjects().keySet()){
-						 String score = (String) userEdu.getCambrigeSubGrds().getSubjects().get(subjName);
-						 if(EducationSystemConstants.READ.equalsIgnoreCase(subjName)){
-							 searchQuery.append(" AND  ").append(EducationSystemConstants.IELTS_Reading).append( ">=").append(score);
-							 countQuery.append(" AND  ").append(EducationSystemConstants.IELTS_Reading).append( ">=").append(score);
-						 }else
-						 if(EducationSystemConstants.WRITE.equalsIgnoreCase(subjName)){
-							 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Writing).append( ">=").append(score);
-							 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Writing).append( ">=").append(score);
-						 }else
-						 if(EducationSystemConstants.SPEAK.equalsIgnoreCase(subjName)){
-							 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Speaking).append( ">=").append(score);
-							 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Speaking).append( ">=").append(score);
-						 }else
-						 if(EducationSystemConstants.LISTEN.equalsIgnoreCase(subjName)){
-							 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Listening).append( ">=").append(score);
-							 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Listening).append( ">=").append(score);
-						 }else
-						 if(EducationSystemConstants.OVERALL.equalsIgnoreCase(subjName)){
-							 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Overall_Score).append( ">=").append(score);
-							 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Overall_Score).append( ">=").append(score);
-						 }					 
-						 
-					 }				
-				}else
-				if("TOFFEL".equalsIgnoreCase( userEdu.getIeltsToffel() )){
-					List<String> subjGradeList = new ArrayList( userEdu.getIeltsToffelScore().getSubjects().values()) ;
-					 Collections.sort(subjGradeList);
-					 for(String subjName : userEdu.getCambrigeSubGrds().getSubjects().keySet()){
-						 String score = (String) userEdu.getCambrigeSubGrds().getSubjects().get(subjName);
-						 if(EducationSystemConstants.READ.equalsIgnoreCase(subjName)){
-							 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Reading).append( ">=").append(score);
-							 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Reading).append( ">=").append(score);
-						 }else
-						 if(EducationSystemConstants.WRITE.equalsIgnoreCase(subjName)){
-							 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Writing).append( ">=").append(score);
-							 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Writing).append( ">=").append(score);
-						 }else
-						 if(EducationSystemConstants.SPEAK.equalsIgnoreCase(subjName)){
-							 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Speaking).append( ">=").append(score);
-							 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Speaking).append( ">=").append(score);
-						 }else
-						 if(EducationSystemConstants.LISTEN.equalsIgnoreCase(subjName)){
-							 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Listening).append( ">=").append(score);
-							 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Listening).append( ">=").append(score);
-						 }else
-						 if(EducationSystemConstants.OVERALL.equalsIgnoreCase(subjName)){
-							 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Overall_Score).append( ">=").append(score);
-							 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Overall_Score).append( ">=").append(score);
-						 }					 
-						 
-					 }				
-				}
-				else{
-					 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Reading).append( "=").append(0);
-					 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Writing).append( "=").append(0);
-					 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Speaking).append( "=").append(0);
-					 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Listening).append( "=").append(0);
-					 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Overall_Score).append( "=").append(0);
-					 
-					 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Reading).append( "=").append(0);
-					 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Writing).append( "=").append(0);
-					 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Speaking).append( "=").append(0);
-					 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Listening).append( "=").append(0);
-					 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Overall_Score).append( "=").append(0);
-					 
-					 
-					 searchQuery.append(" AND  ").append(EducationSystemConstants.IELTS_Reading).append( "=").append(0);
-					 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Writing).append( "=").append(0);
-					 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Speaking).append( "=").append(0);
-					 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Listening).append( "=").append(0);	
-					 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Overall_Score).append( "=").append(0);
-					 
-					 countQuery.append(" AND  ").append(EducationSystemConstants.IELTS_Reading).append( "=").append(0);
-					 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Writing).append( "=").append(0);
-					 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Speaking).append( "=").append(0);
-					 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Listening).append( "=").append(0);	
-					 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Overall_Score).append( "=").append(0);				 
-					 
-				};
+				updateQueryWithEducation(userEdu, searchQuery, countQuery, userEduSystemScore);
 
 				String country = CountryCodeCache.getCountryName(searchVO.getCountryCode());
 				searchQuery.append(" AND country = '").append(country).append("' ");
@@ -612,39 +185,481 @@ public class CourseDAOImpl implements CourseDAO{
 				}
 				
 				//statement.setString(1, "'%"+searchVO.getSearchText()+"%'");
-				ResultSet result = statement.executeQuery(searchQuery.toString());
-				
-				while(result.next()){
-					Course course = new Course ();
-
-					course.setCountry(result.getString("Country"));
-					course.setCourseId(result.getInt("C_ID"));
-					course.setCourseTitle(result.getString("Courses"));
-					course.setCostRange(result.getString("Cost_Range"));
-					course.setDurationTime(result.getString("Duration_Time"));
-					course.setDurationType(result.getString("Duration"));
-					course.setRecognition(result.getString("Recognition"));
-					course.setRecognitionType(result.getString("Recognition_Type"));
-					course.setRemarks(result.getString("Remarks_"));
-					course.setAvgWorldRank(result.getString("WR_Range"));
-					
-					if(result.getInt("sponser_id") > 0){
-						SponserDetails spnDet = new SponserDetails();
-						spnDet.setSponserId(result.getInt("sponser_id"));
-						spnDet.setSponserName(result.getString("sponser_name"));
-						spnDet.setAddText(result.getString("add_text"));
-						spnDet.setCourseId(result.getInt("C_ID"));
-						spnDet.setAddType(result.getInt("add_type"));
-						spnDet.setSponserLogoUrl(ApplicationConstant.LOGO_URL_PATH + ApplicationConstant.LOGO_PREFIX + spnDet.getSponserId() + ApplicationConstant.LOGO_FORMAT);
-						course.setSponserDetails(spnDet);
-					}
-					
-					courseList.add(course);
-				}				
+				loadResultCourses(courseList, searchQuery, statement);				
 			}
 
 			
 		}
+	}
+
+	private void loadResultCourses(List<Course> courseList, StringBuffer searchQuery, PreparedStatement statement)
+			throws SQLException {
+		ResultSet result = statement.executeQuery(searchQuery.toString());
+		
+		while(result.next()){
+			Course course = new Course ();
+
+			course.setCountry(result.getString("Country"));
+			course.setCourseId(result.getInt("C_ID"));
+			course.setCourseTitle(result.getString("Courses"));
+			course.setCostRange(result.getString("Cost_Range"));
+			course.setDurationTime(result.getString("Duration_Time"));
+			course.setDurationType(result.getString("Duration"));
+			course.setRecognition(result.getString("Recognition"));
+			course.setRecognitionType(result.getString("Recognition_Type"));
+			course.setRemarks(result.getString("Remarks_"));
+			course.setAvgWorldRank(result.getString("WR_Range"));
+			
+			if(result.getInt("sponser_id") > 0){
+				SponserDetails spnDet = new SponserDetails();
+				spnDet.setSponserId(result.getInt("sponser_id"));
+				spnDet.setSponserName(result.getString("sponser_name"));
+				spnDet.setAddText(result.getString("add_text"));
+				spnDet.setCourseId(result.getInt("C_ID"));
+				spnDet.setAddType(result.getInt("add_type"));
+				spnDet.setSponserLogoUrl(ApplicationConstant.LOGO_URL_PATH + ApplicationConstant.LOGO_PREFIX + spnDet.getSponserId() + ApplicationConstant.LOGO_FORMAT);
+				course.setSponserDetails(spnDet);
+			}
+			
+			courseList.add(course);
+		}
+	}
+
+	private void updateQueryWithEducation(UserEducation userEdu, StringBuffer searchQuery, StringBuffer countQuery,
+			String userEduSystemScore) {
+		switch (userEdu.getEduSystem()){
+		
+		case EducationSystemConstants.BAN_HSC :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.BAN_HSC);
+			
+			searchQuery.append(" REPLACE (").append(EducationSystemConstants.BAN_HSC ).append(",'%','') <= ").append(userEduSystemScore);
+			countQuery.append(" REPLACE (").append(EducationSystemConstants.BAN_HSC ).append(",'%','') <= ").append(userEduSystemScore);
+			
+			searchQuery.append(" AND  REPLACE (").append(EducationSystemConstants.BAN_HSC ).append(",'%','') > ").append(0);
+			countQuery.append(" AND REPLACE (").append(EducationSystemConstants.BAN_HSC ).append(",'%','') > ").append(0);					
+			break;
+		}
+		case EducationSystemConstants.CHINA_GAO_ER : {
+			logger.debug(" search() Education System :  " + EducationSystemConstants.CHINA_GAO_ER);
+			searchQuery.append(" ").append(EducationSystemConstants.CHINA_GAO_ER ).append(" <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.CHINA_GAO_ER ).append(" <= ").append(userEdu.getEduSystemScore());
+
+
+			searchQuery.append(" AND ").append(EducationSystemConstants.CHINA_GAO_ER ).append(" > ").append(0);
+			countQuery.append(" AND ").append(EducationSystemConstants.CHINA_GAO_ER ).append(" > ").append(0);
+			break;
+			}
+		case EducationSystemConstants.CHINA_GAOKAO_Gao_San: {
+			logger.debug(" search() Education System :  " + EducationSystemConstants.CHINA_GAOKAO_Gao_San);
+			searchQuery.append(" ").append(EducationSystemConstants.CHINA_GAOKAO_Gao_San ).append(" <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.CHINA_GAO_ER ).append(" <= ").append(userEdu.getEduSystemScore());
+			
+			
+			searchQuery.append(" AND ").append(EducationSystemConstants.CHINA_GAOKAO_Gao_San ).append(" > ").append(0);
+			countQuery.append(" AND ").append(EducationSystemConstants.CHINA_GAO_ER ).append(" > ").append(0);
+			
+			break;
+			}
+		case EducationSystemConstants.GLOB_A_LEV : {
+			logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_A_LEV);
+			 List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
+			 Collections.sort(subjGradeList);
+			 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
+				 String grade = subjGradeList.get(i);
+				 grade = grade.replace("+", "");
+				 grade = grade.replace("-", "");
+				 
+				 if( i  == subjGradeList.size()-3	){
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.GLOB_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
+				 	 countQuery.append(" UPPER(").append(EducationSystemConstants.GLOB_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");}
+				 else{
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.GLOB_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+				 	 countQuery.append(" UPPER(").append(EducationSystemConstants.GLOB_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+				 	}
+
+			 }
+			break;
+			}
+		case EducationSystemConstants.GLOB_DEGREE : {
+			logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_DEGREE);
+			searchQuery.append(" ").append(EducationSystemConstants.GLOB_DEGREE ).append(" <=").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.GLOB_DEGREE ).append(" <=").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND ").append(EducationSystemConstants.GLOB_DEGREE ).append(" > ").append(0);
+			countQuery.append(" AND ").append(EducationSystemConstants.GLOB_DEGREE ).append(" > ").append(0);					
+			break;
+			}
+		case EducationSystemConstants.GLOB_DIPLOMA : {
+			logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_DIPLOMA);
+			searchQuery.append(" ").append(EducationSystemConstants.GLOB_DIPLOMA ).append(" <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.GLOB_DIPLOMA ).append(" <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND ").append(EducationSystemConstants.GLOB_DIPLOMA ).append(" > ").append(0);
+			countQuery.append(" AND ").append(EducationSystemConstants.GLOB_DIPLOMA ).append(" > ").append(0);					
+			break;
+			}
+		case EducationSystemConstants.GLOB_FIRST_YEAR : {
+			logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_FIRST_YEAR);
+			searchQuery.append(" ").append(EducationSystemConstants.GLOB_FIRST_YEAR ).append(" <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.GLOB_FIRST_YEAR ).append(" <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND ").append(EducationSystemConstants.GLOB_FIRST_YEAR ).append(" > ").append(0);
+			countQuery.append(" AND ").append(EducationSystemConstants.GLOB_FIRST_YEAR ).append(" > ").append(0);					
+			break;
+			}
+		case EducationSystemConstants.GLOB_GPA :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_GPA);					
+			searchQuery.append(" ").append(EducationSystemConstants.GLOB_GPA ).append(" <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.GLOB_GPA ).append(" <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND ").append(EducationSystemConstants.GLOB_GPA ).append(" > ").append(0);
+			countQuery.append(" AND ").append(EducationSystemConstants.GLOB_GPA ).append(" > ").append(0);					
+			break;
+			}
+		case EducationSystemConstants.GLOB_IB :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_IB);					
+			searchQuery.append(" ").append(EducationSystemConstants.GLOB_IB ).append(" <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.GLOB_IB ).append(" <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND ").append(EducationSystemConstants.GLOB_IB ).append(" > ").append(0);
+			countQuery.append(" AND ").append(EducationSystemConstants.GLOB_IB ).append(" > ").append(0);					
+			break;
+			}
+		case EducationSystemConstants.GLOB_IF :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_IF);					
+			searchQuery.append(" ").append(EducationSystemConstants.GLOB_IF ).append(" <=").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.GLOB_IF ).append(" <=").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND ").append(EducationSystemConstants.GLOB_IF ).append(" > ").append(0);
+			countQuery.append(" AND ").append(EducationSystemConstants.GLOB_IF ).append(" > ").append(0);					
+			break;
+			}
+		case EducationSystemConstants.GLOB_SECOND_YEAR :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.GLOB_SECOND_YEAR);
+			searchQuery.append(" ").append(EducationSystemConstants.GLOB_SECOND_YEAR ).append(" <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.GLOB_SECOND_YEAR ).append(" <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND ").append(EducationSystemConstants.GLOB_SECOND_YEAR ).append(" > ").append(0);
+			countQuery.append(" AND ").append(EducationSystemConstants.GLOB_SECOND_YEAR ).append(" > ").append(0);
+			
+			break;
+			}
+		case EducationSystemConstants.GLOBE_O_LEV :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.GLOBE_O_LEV);
+			searchQuery.append(" ").append(EducationSystemConstants.GLOBE_O_LEV ).append(" <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.GLOBE_O_LEV ).append(" <= ").append(userEdu.getEduSystemScore());
+			break;
+			}
+		case EducationSystemConstants.IND_HSC_ISC_SSC :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.IND_HSC_ISC_SSC);
+			searchQuery.append(" REPLACE (").append(EducationSystemConstants.IND_HSC_ISC_SSC ).append(",'%','') <= ").append(userEduSystemScore);
+			countQuery.append(" REPLACE (").append(EducationSystemConstants.IND_HSC_ISC_SSC ).append(",'%','') <= ").append(userEduSystemScore);
+			
+			searchQuery.append(" AND  REPLACE (").append(EducationSystemConstants.IND_HSC_ISC_SSC ).append(",'%','') > ").append(0);
+			countQuery.append(" AND REPLACE (").append(EducationSystemConstants.IND_HSC_ISC_SSC ).append(",'%','') > ").append(0);
+			
+			break;
+			}
+		case EducationSystemConstants.INDO_SMU :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.INDO_SMU);
+			searchQuery.append(" ").append(EducationSystemConstants.INDO_SMU ).append(" <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.INDO_SMU ).append(" <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND ").append(EducationSystemConstants.INDO_SMU ).append(" > ").append( 0 );
+			countQuery.append(" AND ").append(EducationSystemConstants.INDO_SMU ).append(" > ").append( 0 );					
+			break;
+			}
+		case EducationSystemConstants.IRAN_DM_HSC :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.IRAN_DM_HSC);
+			searchQuery.append(" REPLACE (").append(EducationSystemConstants.IRAN_DM_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" REPLACE (").append(EducationSystemConstants.IRAN_DM_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND REPLACE (").append(EducationSystemConstants.IRAN_DM_HSC ).append(",'%','') > ").append(0);
+			countQuery.append(" AND REPLACE (").append(EducationSystemConstants.IRAN_DM_HSC ).append(",'%','') > ").append(0);
+			
+			break;
+			}
+		case EducationSystemConstants.JAPAN_KSS :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.JAPAN_KSS);
+			searchQuery.append(" ").append(EducationSystemConstants.JAPAN_KSS ).append(" <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.JAPAN_KSS ).append(" <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND ").append(EducationSystemConstants.JAPAN_KSS ).append(" > ").append(0);
+			countQuery.append(" AND ").append(EducationSystemConstants.JAPAN_KSS ).append(" > ").append(0);
+			
+			break;
+			}
+		case EducationSystemConstants.KSA_DM_HSC :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.KSA_DM_HSC);
+			searchQuery.append(" REPLACE (").append(EducationSystemConstants.KSA_DM_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" REPLACE (").append(EducationSystemConstants.KSA_DM_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND REPLACE (").append(EducationSystemConstants.KSA_DM_HSC ).append(",'%','') > ").append(0);
+			countQuery.append(" AND REPLACE (").append(EducationSystemConstants.KSA_DM_HSC ).append(",'%','') > ").append(0);					
+			break;
+			}
+		case EducationSystemConstants.MAL_SPM :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.MAL_SPM);
+			searchQuery.append(" ").append(EducationSystemConstants.MAL_SPM ).append(" <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.MAL_SPM ).append(" <= ").append(userEdu.getEduSystemScore());
+			break;
+			}
+		case EducationSystemConstants.MAL_STPM :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.MAL_STPM);
+			List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
+			 Collections.sort(subjGradeList);
+			 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
+				 String grade = subjGradeList.get(i);
+				 grade = grade.replace("+", "");
+				 grade = grade.replace("-", "");
+				 
+				 if( i  == subjGradeList.size()-3	){
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.MAL_STPM_).append(i+1).append( ") <= '").append(grade.toUpperCase()).append("'  ");
+				 	 countQuery.append(" UPPER(").append(EducationSystemConstants.MAL_STPM_).append(i+1).append( ") <= '").append(grade.toUpperCase()).append("'  ");}
+				 else{
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.MAL_STPM_).append(i+1).append( ") <= '").append(grade.toUpperCase()).append("' AND ");
+					 countQuery.append(" UPPER(").append(EducationSystemConstants.MAL_STPM_).append(i+1).append( ") <= '").append(grade.toUpperCase()).append("' AND ");
+					 }
+
+			 }
+			break;
+			}
+		case EducationSystemConstants.NEP_HSC :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.NEP_HSC);
+			searchQuery.append(" REPLACE (").append(EducationSystemConstants.NEP_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" REPLACE (").append(EducationSystemConstants.NEP_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND REPLACE (").append(EducationSystemConstants.NEP_HSC ).append(",'%','') > ").append(0);
+			countQuery.append(" AND REPLACE (").append(EducationSystemConstants.NEP_HSC ).append(",'%','') > ").append(0);					
+			break;
+			}
+		case EducationSystemConstants.PAK_HSC :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.PAK_HSC);
+			searchQuery.append(" REPLACE (").append(EducationSystemConstants.PAK_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" REPLACE (").append(EducationSystemConstants.PAK_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND  REPLACE (").append(EducationSystemConstants.PAK_HSC ).append(",'%','') > ").append(0);
+			countQuery.append(" AND REPLACE (").append(EducationSystemConstants.PAK_HSC ).append(",'%','') > ").append(0);
+			
+			break;
+			}
+		case EducationSystemConstants.PHILIP_HSC :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.PHILIP_HSC);
+			searchQuery.append(" REPLACE (").append(EducationSystemConstants.PHILIP_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" REPLACE (").append(EducationSystemConstants.PHILIP_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND REPLACE (").append(EducationSystemConstants.PHILIP_HSC ).append(",'%','') > ").append(0);
+			countQuery.append(" AND REPLACE (").append(EducationSystemConstants.PHILIP_HSC ).append(",'%','') > ").append(0);
+			
+			break;
+			}
+		case EducationSystemConstants.SAT_USA :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.SAT_USA);
+			searchQuery.append(" ").append(EducationSystemConstants.SAT_USA ).append(" <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.SAT_USA ).append(" <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND ").append(EducationSystemConstants.SAT_USA ).append(" > ").append(0);
+			countQuery.append(" AND ").append(EducationSystemConstants.SAT_USA ).append(" > ").append(0);					
+			break;
+			}
+		case EducationSystemConstants.SGP_A_LEVE :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.SGP_A_LEVE);
+			List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
+			 Collections.sort(subjGradeList);
+			 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
+				 String grade = subjGradeList.get(i);
+				 grade = grade.replace("+", "");
+				 grade = grade.replace("-", "");
+				 
+				 if( i  == subjGradeList.size()-3	){
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.SGP_A_LEVE_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
+					 countQuery.append(" UPPER(").append(EducationSystemConstants.SGP_A_LEVE_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
+					 }
+				 else{
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.SGP_A_LEVE_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+					 countQuery.append(" UPPER(").append(EducationSystemConstants.SGP_A_LEVE_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+					 }
+
+			 }
+			break;
+			}
+		case EducationSystemConstants.SGP_O_LEVE :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.SGP_O_LEVE);
+			searchQuery.append(" ").append(EducationSystemConstants.SGP_O_LEVE ).append(" >= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.SGP_O_LEVE ).append(" >= ").append(userEdu.getEduSystemScore());
+			break;
+			}
+		case EducationSystemConstants.SRI_A_LEV :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.SRI_A_LEV);
+			List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
+			 Collections.sort(subjGradeList);
+			 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
+				 String grade = subjGradeList.get(i);
+				 grade = grade.replace("+", "");
+				 grade = grade.replace("-", "");
+				 if( i  == subjGradeList.size()-3	){
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.SRI_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
+					 countQuery.append(" UPPER(").append(EducationSystemConstants.SRI_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
+					 }
+				 else{
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.SRI_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+					 countQuery.append(" UPPER(").append(EducationSystemConstants.SRI_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+					 }
+			 }
+			break;
+			}
+		case EducationSystemConstants.SRI_O_LEV :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.SRI_O_LEV);
+			searchQuery.append(" ").append(EducationSystemConstants.SRI_O_LEV ).append(" >= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.SRI_O_LEV ).append(" >= ").append(userEdu.getEduSystemScore());
+			break;
+			}
+		case EducationSystemConstants.THA_MathayomSuksa_5_6 :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.THA_MathayomSuksa_5_6);
+			searchQuery.append(" ").append(EducationSystemConstants.THA_MathayomSuksa_5_6 ).append(" <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.THA_MathayomSuksa_5_6 ).append(" <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND ").append(EducationSystemConstants.THA_MathayomSuksa_5_6 ).append(" > ").append(0);
+			countQuery.append(" AND ").append(EducationSystemConstants.THA_MathayomSuksa_5_6 ).append(" > ").append(0);
+			
+			break;
+			}
+		case EducationSystemConstants.UAE_REG_DM_HSC :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.UAE_REG_DM_HSC);
+			searchQuery.append(" ").append(EducationSystemConstants.UAE_REG_DM_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.UAE_REG_DM_HSC ).append(",'%','') <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" AND ").append(EducationSystemConstants.UAE_REG_DM_HSC ).append(",'%','') > ").append(0);
+			countQuery.append(" AND ").append(EducationSystemConstants.UAE_REG_DM_HSC ).append(",'%','') > ").append(0);
+			
+			break;
+			}
+		case EducationSystemConstants.UK_A_LEV :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.UK_A_LEV);
+			List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
+			 Collections.sort(subjGradeList);
+			 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
+				 String grade = subjGradeList.get(i);
+				 
+				 grade = grade.replace("+", "");
+				 grade = grade.replace("-", "");
+				 if( i  == subjGradeList.size()-3	){
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.UK_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
+					 countQuery.append(" UPPER(").append(EducationSystemConstants.UK_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
+					 }
+				 else{
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.UK_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+					 countQuery.append(" UPPER(").append(EducationSystemConstants.UK_A_LEV_).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+					 }
+
+			 }
+			break;
+			}
+		case EducationSystemConstants.UK_O_LEV :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.UK_O_LEV);
+			searchQuery.append(" ").append(EducationSystemConstants.UK_O_LEV ).append(" >= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.UK_O_LEV ).append(" >= ").append(userEdu.getEduSystemScore());
+			break;
+			}
+		case EducationSystemConstants.US_GPA :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.US_GPA);
+			searchQuery.append(" ").append(EducationSystemConstants.US_GPA ).append(" <= ").append(userEdu.getEduSystemScore());
+			countQuery.append(" ").append(EducationSystemConstants.US_GPA ).append(" <= ").append(userEdu.getEduSystemScore());
+			
+			searchQuery.append(" ").append(EducationSystemConstants.US_GPA ).append(" > ").append(0);
+			countQuery.append(" ").append(EducationSystemConstants.US_GPA ).append(" > ").append(0);					
+			break;
+			}
+
+		}
+		
+		
+		if("Y".equals( userEdu.getIsEngMedium() )){
+			
+		}else
+		if("IELTS".equalsIgnoreCase( userEdu.getIeltsToffel() )){
+			List<String> subjGradeList = new ArrayList( userEdu.getIeltsToffelScore().getSubjects().values()) ;
+			 Collections.sort(subjGradeList);
+			 for(String subjName : userEdu.getCambrigeSubGrds().getSubjects().keySet()){
+				 String score = (String) userEdu.getCambrigeSubGrds().getSubjects().get(subjName);
+				 if(EducationSystemConstants.READ.equalsIgnoreCase(subjName)){
+					 searchQuery.append(" AND  ").append(EducationSystemConstants.IELTS_Reading).append( ">=").append(score);
+					 countQuery.append(" AND  ").append(EducationSystemConstants.IELTS_Reading).append( ">=").append(score);
+				 }else
+				 if(EducationSystemConstants.WRITE.equalsIgnoreCase(subjName)){
+					 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Writing).append( ">=").append(score);
+					 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Writing).append( ">=").append(score);
+				 }else
+				 if(EducationSystemConstants.SPEAK.equalsIgnoreCase(subjName)){
+					 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Speaking).append( ">=").append(score);
+					 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Speaking).append( ">=").append(score);
+				 }else
+				 if(EducationSystemConstants.LISTEN.equalsIgnoreCase(subjName)){
+					 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Listening).append( ">=").append(score);
+					 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Listening).append( ">=").append(score);
+				 }else
+				 if(EducationSystemConstants.OVERALL.equalsIgnoreCase(subjName)){
+					 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Overall_Score).append( ">=").append(score);
+					 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Overall_Score).append( ">=").append(score);
+				 }					 
+				 
+			 }				
+		}else
+		if("TOFFEL".equalsIgnoreCase( userEdu.getIeltsToffel() )){
+			List<String> subjGradeList = new ArrayList( userEdu.getIeltsToffelScore().getSubjects().values()) ;
+			 Collections.sort(subjGradeList);
+			 for(String subjName : userEdu.getCambrigeSubGrds().getSubjects().keySet()){
+				 String score = (String) userEdu.getCambrigeSubGrds().getSubjects().get(subjName);
+				 if(EducationSystemConstants.READ.equalsIgnoreCase(subjName)){
+					 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Reading).append( ">=").append(score);
+					 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Reading).append( ">=").append(score);
+				 }else
+				 if(EducationSystemConstants.WRITE.equalsIgnoreCase(subjName)){
+					 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Writing).append( ">=").append(score);
+					 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Writing).append( ">=").append(score);
+				 }else
+				 if(EducationSystemConstants.SPEAK.equalsIgnoreCase(subjName)){
+					 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Speaking).append( ">=").append(score);
+					 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Speaking).append( ">=").append(score);
+				 }else
+				 if(EducationSystemConstants.LISTEN.equalsIgnoreCase(subjName)){
+					 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Listening).append( ">=").append(score);
+					 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Listening).append( ">=").append(score);
+				 }else
+				 if(EducationSystemConstants.OVERALL.equalsIgnoreCase(subjName)){
+					 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Overall_Score).append( ">=").append(score);
+					 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Overall_Score).append( ">=").append(score);
+				 }					 
+				 
+			 }				
+		}
+		else{
+			 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Reading).append( "=").append(0);
+			 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Writing).append( "=").append(0);
+			 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Speaking).append( "=").append(0);
+			 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Listening).append( "=").append(0);
+			 searchQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Overall_Score).append( "=").append(0);
+			 
+			 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Reading).append( "=").append(0);
+			 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Writing).append( "=").append(0);
+			 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Speaking).append( "=").append(0);
+			 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Listening).append( "=").append(0);
+			 countQuery.append(" AND ").append(EducationSystemConstants.TOFEL_Overall_Score).append( "=").append(0);
+			 
+			 
+			 searchQuery.append(" AND  ").append(EducationSystemConstants.IELTS_Reading).append( "=").append(0);
+			 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Writing).append( "=").append(0);
+			 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Speaking).append( "=").append(0);
+			 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Listening).append( "=").append(0);	
+			 searchQuery.append(" AND ").append(EducationSystemConstants.IELTS_Overall_Score).append( "=").append(0);
+			 
+			 countQuery.append(" AND  ").append(EducationSystemConstants.IELTS_Reading).append( "=").append(0);
+			 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Writing).append( "=").append(0);
+			 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Speaking).append( "=").append(0);
+			 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Listening).append( "=").append(0);	
+			 countQuery.append(" AND ").append(EducationSystemConstants.IELTS_Overall_Score).append( "=").append(0);				 
+			 
+		};
 	}
 
 
@@ -788,12 +803,12 @@ public class CourseDAOImpl implements CourseDAO{
 
 			SearchResultVO responseData = new SearchResultVO();
 			if(courseList != null && courseList.size() > 0){
-				responseData.setStatus("OK");
+				responseData.setStatus("1");
 				responseData.setPageNo(searchVO.getPageNo());
 				responseData.setData(courseList);
 				responseData.setMessage("Results found for your search criteria.");
 			}else{
-				responseData.setStatus("FAIL");
+				responseData.setStatus("0");
 				responseData.setPageNo(searchVO.getPageNo());
 				responseData.setData(null);
 				responseData.setMessage("No results found. Please make sure your education information is complete. Try again later.");
@@ -803,6 +818,8 @@ public class CourseDAOImpl implements CourseDAO{
 			return responseData;
 		  }catch(Exception exe){
 			  exe.printStackTrace();
+		  }finally{
+			  
 		  }
 			
 			return null;
@@ -821,8 +838,9 @@ public class CourseDAOImpl implements CourseDAO{
 				+ " where unlock_course.user_id = ? and  unlock_course.course_id = ? " ;
 		int count = -1;
 		PreparedStatement statement = null;
+		Connection con = dbUtil.getJNDIConnection();
 		try{
-			Connection con = dbUtil.getJNDIConnection();
+			
 			con.setAutoCommit(false);
 			statement = con.prepareStatement(checkUnlockQuery);
 			long userId = getUserIdBySession(unlockCourseVO.getSessionId(), con);
@@ -847,270 +865,458 @@ public class CourseDAOImpl implements CourseDAO{
 		}finally{
 			if(statement != null)
 			statement.close();
+			closeConnection(con);
 		}
 		return null;
 	}
 
-private void updateUserUnlockCourse(long userId ,int courseId , Connection con)throws SQLException {
-	
-	String insertUserUnlockCourseQuery = "insert into user_unlocked_courses (user_id, course_id, unlock_timestamp) values(?, ?, ?)";
-	PreparedStatement insUsrUnlcCrsStmt = null;
-	try{
-		insUsrUnlcCrsStmt = con.prepareStatement(insertUserUnlockCourseQuery);
-		insUsrUnlcCrsStmt.setLong(1, userId);
-		insUsrUnlcCrsStmt.setInt(2, courseId);
-		insUsrUnlcCrsStmt.setTimestamp(3, new Timestamp( new Date().getTime()) );
-		int rowAffected = insUsrUnlcCrsStmt.executeUpdate();
+	private void updateUserUnlockCourse(long userId ,int courseId , Connection con)throws SQLException {
 		
-		
-	}catch(SQLException exe){
-		throw exe;
-	}finally{
-		if(insUsrUnlcCrsStmt != null){
-			insUsrUnlcCrsStmt.close();
-		}
-	}
-}
-
-private void updateUserCredits(long userId , int courseId , int coursePoints , Connection con) throws SQLException{
-		String updateUserCreditQuery = " update user_credits set balance_points =  balance_points - ? , t_date = ? where user_id = ?";
-		String insertUserCreditHistoryQuery = " insert into  user_transaction_history (u_id, t_timestamp, course_id, points) values(?,?,?,?)";
-		
-		PreparedStatement updateCreditStm = null;
-		PreparedStatement insertCrdtHistoryStm = null;
-		try{ 
-			updateCreditStm = con.prepareStatement(updateUserCreditQuery);
-			updateCreditStm.setInt(1, coursePoints);
-			Timestamp transTime = new Timestamp( new Date().getTime());
-			updateCreditStm.setTimestamp(2, transTime);
-			updateCreditStm.setLong(3, userId);
-			int crdtRow = updateCreditStm.executeUpdate();
+		String insertUserUnlockCourseQuery = "insert into user_unlocked_courses (user_id, course_id, unlock_timestamp) values(?, ?, ?)";
+		PreparedStatement insUsrUnlcCrsStmt = null;
+		try{
+			insUsrUnlcCrsStmt = con.prepareStatement(insertUserUnlockCourseQuery);
+			insUsrUnlcCrsStmt.setLong(1, userId);
+			insUsrUnlcCrsStmt.setInt(2, courseId);
+			insUsrUnlcCrsStmt.setTimestamp(3, new Timestamp( new Date().getTime()) );
+			int rowAffected = insUsrUnlcCrsStmt.executeUpdate();
 			
-			if(crdtRow > 0) {
-			insertCrdtHistoryStm = con.prepareStatement(insertUserCreditHistoryQuery);
-			insertCrdtHistoryStm.setLong(1, userId);
-			insertCrdtHistoryStm.setTimestamp(2,transTime);
-			insertCrdtHistoryStm.setInt(3,courseId);
-			insertCrdtHistoryStm.setInt(4,coursePoints);
-			crdtRow = insertCrdtHistoryStm.executeUpdate();
-			}
 			
 		}catch(SQLException exe){
 			throw exe;
 		}finally{
-			if(updateCreditStm != null)updateCreditStm.close();
-			if(insertCrdtHistoryStm != null) insertCrdtHistoryStm.close();
-		}
-
-}
-
-private boolean hasCredits(String sessionId , int coursePoints , Connection con)  throws SQLException{
-	String checkUserCredits = " select  balance_points from user_credits usr_crd	" +  
-			"	inner join users usr on usr.id = usr_crd.user_id	" +
-			"	inner join user_session usr_sion on usr.id =  usr_sion.user_id	" +
-			"	where usr_sion.session_token = ? ";
-	PreparedStatement statement = null;
-	try {
-		
-		statement = con.prepareStatement(checkUserCredits);
-		statement.setString(1, sessionId);
-		ResultSet result = statement.executeQuery();
-		int balancePoints = -1;
-		while(result.next()) { balancePoints = result.getInt("balance_points");}
-
-		if(balancePoints >= coursePoints){
-			return true;
-		}else{
-			return false;
-		}
-	} catch (SQLException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-		
-	}finally{
-		if(statement != null){
-			statement.close();
+			if(insUsrUnlcCrsStmt != null){
+				insUsrUnlcCrsStmt.close();
+			}
 		}
 	}
-	return false;
-}
 
-private CourseResultVO getCourseDetails(int courseId , Connection con) throws SQLException{
-
-	CourseResultVO  courseResult = new CourseResultVO();
-	String courseDetailsQuery = "select  "+
-			"University,"+
-			"City,"+
-			"C_ID,"+
-			"Courses,"+
-			"Int_Fees,"+
-			"Currency,"+
-			"Currency_Time,"+
-			"Duration,"+
-			"Duration_Time,"+
-			"Cost_Savings,"+
-			"Cost_Range,"+
-			"Remarks_,"+
-			"Twinning_Program,"+
-			"Country,"+
-			"World_Ranking,"+
-			"WR_Range,"+
-			"Recognition,"+
-			"Recognition_Type,"+
-			"Website,"+
-			"Local_Fees,"+
-			"Faculty,"+
-			"Course_Type " +
-			 " from university_course_attribute where c_Id = ?";
-	
-	
-	PreparedStatement statement = null;
-	try {
-		
-		statement = con.prepareStatement(courseDetailsQuery);
-		statement.setLong(1, courseId);
-		ResultSet result = statement.executeQuery();
-		CourseDetails courseDetail = null;
-		while(result.next()) { 
-			courseDetail = new CourseDetails();
-			courseDetail.setAvgWorldRank(result.getString("WR_Range"));
-			courseDetail.setCity(result.getString("City"));
-			courseDetail.setCostRange(result.getString("Cost_Range"));
-			courseDetail.setCostSavings(result.getString("Cost_Savings"));
-			courseDetail.setCountry(result.getString("Country"));
-			courseDetail.setCourseId(result.getInt("C_ID"));
-			courseDetail.setCourseTitle(result.getString("Courses"));
-			courseDetail.setCourseType(result.getString("Course_Type"));
-			courseDetail.setCurrency(result.getString("Currency"));
-			courseDetail.setCurrencyTime(result.getString("Currency_Time"));
-			courseDetail.setDurationTime(result.getString("Duration_Time"));
-			courseDetail.setDurationType(result.getString("Duration"));
-			courseDetail.setFaculty(result.getString("Faculty"));
-			courseDetail.setIntFees(result.getString("Int_Fees"));
-			courseDetail.setRecognition(result.getString("Recognition"));
-			courseDetail.setRecognitionType(result.getString("Recognition_Type"));
-			courseDetail.setRemarks(result.getString("Remarks_"));
-			courseDetail.setTwinningProgram(result.getString("Twinning_Program"));
-			courseDetail.setUniversity(result.getString("University"));
-			courseDetail.setWebsite(result.getString("Website"));
-			courseDetail.setWorldRanking(result.getString("World_Ranking"));
+	private void updateUserCredits(long userId , int courseId , int coursePoints , Connection con) throws SQLException{
+			String updateUserCreditQuery = " update user_credits set balance_points =  balance_points - ? , t_date = ? where user_id = ?";
+			String insertUserCreditHistoryQuery = " insert into  user_transaction_history (u_id, t_timestamp, course_id, points) values(?,?,?,?)";
+			
+			PreparedStatement updateCreditStm = null;
+			PreparedStatement insertCrdtHistoryStm = null;
+			try{ 
+				updateCreditStm = con.prepareStatement(updateUserCreditQuery);
+				updateCreditStm.setInt(1, coursePoints);
+				Timestamp transTime = new Timestamp( new Date().getTime());
+				updateCreditStm.setTimestamp(2, transTime);
+				updateCreditStm.setLong(3, userId);
+				int crdtRow = updateCreditStm.executeUpdate();
+				
+				if(crdtRow > 0) {
+				insertCrdtHistoryStm = con.prepareStatement(insertUserCreditHistoryQuery);
+				insertCrdtHistoryStm.setLong(1, userId);
+				insertCrdtHistoryStm.setTimestamp(2,transTime);
+				insertCrdtHistoryStm.setInt(3,courseId);
+				insertCrdtHistoryStm.setInt(4,coursePoints);
+				crdtRow = insertCrdtHistoryStm.executeUpdate();
+				}
+				
+			}catch(SQLException exe){
+				throw exe;
+			}finally{
+				if(updateCreditStm != null)updateCreditStm.close();
+				if(insertCrdtHistoryStm != null) insertCrdtHistoryStm.close();
 			}
-		if(courseDetail != null){
-			courseResult.setMessage("Course unlocked successfully.");
-			courseResult.setStatus("OK");
-		}else{
-			courseResult.setMessage("Due to some technical problems unable to unlock course. Please try later.");
-			courseResult.setStatus("FAIL");			
-		}
-		courseResult.setData(courseDetail);
-
-	} catch (SQLException e) {
-		courseResult.setMessage("Due to some technical problems unable to unlock course. Please try later.");
-		courseResult.setStatus("FAIL");
-		e.printStackTrace();
-		
-	}finally{
-		if(statement != null){
-			statement.close();
-		}
-	}	
-	return courseResult;
-}
-
-public static void main(String abc[]){
-	  DBUtil dbUtil = new DBUtil(); 
-	 Connection con2 = dbUtil.getStandAloneConnection();	
-	 if(con2 != null){
-		 SearchVO searchVO = new SearchVO();
-		 searchVO.setCountryCode("SZ");
-		 searchVO.setSearchText("Business");
-		 searchVO.setSessionId("d2a757a6aa875a5a46491bce5a522895");
-		 searchVO.setPageNo(1);
-		 
-		 CourseDAOImpl searchDAO = new CourseDAOImpl();
-		 SearchResultVO searchResultVO = searchDAO.search(searchVO, con2);
-		 
-		 System.out.println(searchResultVO != null);
-	 }
-	 
-
-	 
- }
-
-@Override
-public UnlockedCourseVO getUserUnlockedCourses(String sessionToken) {
-	UnlockedCourseVO ulocCrsVo = new UnlockedCourseVO();
-	List<Course> courseList = new ArrayList<Course>();
-	StringBuffer searchQuery = new StringBuffer();
-	searchQuery.append(" SELECT  Courses, Int_Fees, Currency, Duration , Duration_Time , Cost_Savings, Remarks_, WR_Range, ");
-	searchQuery.append(" Cost_Range , Twinning_Program, Recognition , Recognition_Type, Faculty, Course_Type, C_ID, Country ");
-	searchQuery.append(" FROM university_course_attribute ");
-	searchQuery.append(" inner join  user_unlocked_courses uuc  on C_ID = uuc.course_id ");
-	searchQuery.append(" inner join  users usr  on uuc.user_id = usr.id ");
-	searchQuery.append(" inner join  user_session usr_sesion  on usr.id = usr_sesion.user_id ");
-	searchQuery.append("  WHERE usr_sesion.session_token = ?");
 	
-	PreparedStatement statement = null;
-	try {
-		Connection con = dbUtil.getJNDIConnection();		
-		statement = con.prepareStatement(searchQuery.toString());
-		statement.setString(1, sessionToken);
-		logger.debug("SQL :" + statement.toString());
-		ResultSet result = statement.executeQuery();
-		while(result.next()){
-			Course course = new Course ();
+	}
 
-			course.setCountry(result.getString("Country"));
-			course.setCourseId(result.getInt("C_ID"));
-			course.setCourseTitle(result.getString("Courses"));
-			course.setCostRange(result.getString("Cost_Range"));
-			course.setDurationTime(result.getString("Duration_Time"));
-			course.setDurationType(result.getString("Duration"));
-			course.setRecognition(result.getString("Recognition"));
-			course.setRecognitionType(result.getString("Recognition_Type"));
-			course.setRemarks(result.getString("Remarks_"));
-			course.setAvgWorldRank(result.getString("WR_Range"));
-			courseList.add(course);
-		}		
-		
-		ulocCrsVo.setData(courseList);
-		ulocCrsVo.setMessage("User unlocked courses successfully loaded");
-		ulocCrsVo.setStatus("OK");
-		ulocCrsVo.setTotalRecords(courseList.size());
-		
-		}catch (SQLException e) {
-			ulocCrsVo.setMessage("Due to some technical problems unable to unlock course. Please try later.");
-			ulocCrsVo.setStatus("FAIL");
-			logger.error(" getUserUnlockedCourses() : ",e); 
+	private boolean hasCredits(String sessionId , int coursePoints , Connection con)  throws SQLException{
+		String checkUserCredits = " select  balance_points from user_credits usr_crd	" +  
+				"	inner join users usr on usr.id = usr_crd.user_id	" +
+				"	inner join user_session usr_sion on usr.id =  usr_sion.user_id	" +
+				"	where usr_sion.session_token = ? ";
+		PreparedStatement statement = null;
+		try {
+			
+			statement = con.prepareStatement(checkUserCredits);
+			statement.setString(1, sessionId);
+			ResultSet result = statement.executeQuery();
+			int balancePoints = -1;
+			while(result.next()) { balancePoints = result.getInt("balance_points");}
+	
+			if(balancePoints >= coursePoints){
+				return true;
+			}else{
+				return false;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 			
 		}finally{
-			closeStatment(statement);
-		}		
-	return ulocCrsVo;
-}
+			if(statement != null){
+				statement.close();
+			}
+		}
+		return false;
+	}
 
-private void closeStatment(PreparedStatement statement) {
-	if(statement != null){
-		try{
-			statement.close();
-		}catch(Exception e){
-			logger.error("closeStatement() : ",e);
+	private CourseResultVO getCourseDetails(int courseId , Connection con) throws SQLException{
+	
+		CourseResultVO  courseResult = new CourseResultVO();
+		String courseDetailsQuery = "select  "+
+				"course.University,"+
+				"course.City,"+
+				"course.C_ID,"+
+				"course.Courses,"+
+				"course.Int_Fees,"+
+				"course.Currency,"+
+				"course.Currency_Time,"+
+				"course.Duration,"+
+				"course.Duration_Time,"+
+				"course.Cost_Savings,"+
+				"course.Cost_Range,"+
+				"course.Remarks_,"+
+				"course.Twinning_Program,"+
+				"course.Country,"+
+				"course.World_Ranking,"+
+				"course.WR_Range,"+
+				"course.Recognition,"+
+				"course.Recognition_Type,"+
+				"course.Website,"+
+				"course.Local_Fees,"+
+				"course.Faculty,"+
+				"course.Course_Type, " +
+	
+				"school.Accredited,"+
+				"school.Int_Ph_num," +
+				"school.Int_Emails," +
+				"school.Website," +
+				"school.T_num_of_stu,"+
+				"school.Longitude," +
+				"school.Address," +
+				"school.Schlr_finan_asst," +
+				"school.YOUTUBE_Link," +
+				"school.Corse_Start_Date," +
+				"school.Visa_Work_Benefits," +
+				"school.Emp_career_dev," +
+				"school.Couns_personal_acad,"+
+				"school.Study_Library_Support,"+
+				"school.About_Us_Info," +
+				"school.Opening_hour"+
+				 
+				 " from university_course_attribute course "
+				 + " left join school_detail  school on  Univeristy_Name = University "
+				 + " where c_Id = ?";
+		
+		
+		PreparedStatement statement = null;
+		try {
+			
+			statement = con.prepareStatement(courseDetailsQuery);
+			statement.setLong(1, courseId);
+			ResultSet result = statement.executeQuery();
+			CourseDetails courseDetail = null;
+			while(result.next()) { 
+				courseDetail = new CourseDetails();
+				courseDetail.setAvgWorldRank(result.getString("WR_Range"));
+				courseDetail.setCity(result.getString("City"));
+				courseDetail.setCostRange(result.getString("Cost_Range"));
+				courseDetail.setCostSavings(result.getString("Cost_Savings"));
+				courseDetail.setCountry(result.getString("Country"));
+				courseDetail.setCourseId(result.getInt("C_ID"));
+				courseDetail.setCourseTitle(result.getString("Courses"));
+				courseDetail.setCourseType(result.getString("Course_Type"));
+				courseDetail.setCurrency(result.getString("Currency"));
+				courseDetail.setCurrencyTime(result.getString("Currency_Time"));
+				courseDetail.setDurationTime(result.getString("Duration_Time"));
+				courseDetail.setDurationType(result.getString("Duration"));
+				courseDetail.setFaculty(result.getString("Faculty"));
+				courseDetail.setIntFees(result.getString("Int_Fees"));
+				courseDetail.setRecognition(result.getString("Recognition"));
+				courseDetail.setRecognitionType(result.getString("Recognition_Type"));
+				courseDetail.setRemarks(result.getString("Remarks_"));
+				courseDetail.setTwinningProgram(result.getString("Twinning_Program"));
+				courseDetail.setUniversity(result.getString("University"));
+				courseDetail.setWebsite(result.getString("Website"));
+				courseDetail.setWorldRanking(result.getString("World_Ranking"));
+				
+				courseDetail.getUniversityInfo().setAccredited(result.getString("Accredited"));
+				courseDetail.getUniversityInfo().setPhone(result.getString("Int_Ph_num"));
+				courseDetail.getUniversityInfo().setEmail(result.getString("Int_Emails"));
+				courseDetail.getUniversityInfo().setTotalNoOfInst(result.getString("T_num_of_stu"));
+				courseDetail.getUniversityInfo().setWebsite(result.getString("Website"));
+				courseDetail.getUniversityInfo().setLongitude(result.getString("Longitude"));
+				courseDetail.getUniversityInfo().setAddress(result.getString("Address"));
+				courseDetail.getUniversityInfo().setScholarshipAvail(result.getString("Schlr_finan_asst"));
+				courseDetail.getUniversityInfo().setYoutubeLink(result.getString("YOUTUBE_Link"));
+				courseDetail.getUniversityInfo().setCourseStart(result.getString("Corse_Start_Date"));
+				courseDetail.getUniversityInfo().setVisaWorkBenifits(result.getString("Visa_Work_Benefits"));
+				courseDetail.getUniversityInfo().setAboutUs(result.getString("About_Us_Info"));
+				courseDetail.getUniversityInfo().setOpeningTime(result.getString("Opening_hour"));
+				
+				courseDetail.getUniversityInfo().getServices().setEmpCareerDev(result.getString("Emp_career_dev"));
+				courseDetail.getUniversityInfo().getServices().setCounsPersonalAcad(result.getString("Couns_personal_acad"));
+				courseDetail.getUniversityInfo().getServices().setStudyLibrarySupport(result.getString("Study_Library_Support"));
+	
+				
+				}
+			if(courseDetail != null){
+				courseResult.setMessage("Course unlocked successfully.");
+				courseResult.setStatus("1");
+			}else{
+				courseResult.setMessage("Due to some technical problems unable to unlock course. Please try later.");
+				courseResult.setStatus("0");			
+			}
+			courseResult.setData(courseDetail);
+	
+		} catch (SQLException e) {
+			courseResult.setMessage("Due to some technical problems unable to unlock course. Please try later.");
+			courseResult.setStatus("0");
+			e.printStackTrace();
+			
+		}finally{
+			if(statement != null){
+				statement.close();
+				closeConnection(con);
+			}
+		}	
+		return courseResult;
+	}
+
+	private void closeConnection(Connection con) {
+		
+		if(con != null){
+			try {
+				con.close();
+			} catch (SQLException e) {
+				logger.error("close connection : " , e);
+			}
+		}
+		
+	}
+
+	public static void main(String abc[]){
+		  DBUtil dbUtil = new DBUtil(); 
+		 Connection con2 = dbUtil.getStandAloneConnection();	
+		 if(con2 != null){
+			 SearchVO searchVO = new SearchVO();
+			 searchVO.setCountryCode("SZ");
+			 searchVO.setSearchText("Business");
+			 searchVO.setSessionId("d2a757a6aa875a5a46491bce5a522895");
+			 searchVO.setPageNo(1);
+			 
+			 CourseDAOImpl searchDAO = new CourseDAOImpl();
+			 SearchResultVO searchResultVO = searchDAO.search(searchVO, con2);
+			 
+			 System.out.println(searchResultVO != null);
+		 }
+		 
+	
+		 
+	 }
+	
+	@Override
+	public UnlockedCourseVO getUserUnlockedCourses(String sessionToken) {
+		UnlockedCourseVO ulocCrsVo = new UnlockedCourseVO();
+		List<Course> courseList = new ArrayList<Course>();
+		StringBuffer searchQuery = new StringBuffer();
+		searchQuery.append(" SELECT  Courses, Int_Fees, Currency, Duration , Duration_Time , Cost_Savings, Remarks_, WR_Range, ");
+		searchQuery.append(" Cost_Range , Twinning_Program, Recognition , Recognition_Type, Faculty, Course_Type, C_ID, Country ");
+		searchQuery.append(" FROM university_course_attribute ");
+		searchQuery.append(" inner join  user_unlocked_courses uuc  on C_ID = uuc.course_id ");
+		searchQuery.append(" inner join  users usr  on uuc.user_id = usr.id ");
+		searchQuery.append(" inner join  user_session usr_sesion  on usr.id = usr_sesion.user_id ");
+		searchQuery.append("  WHERE usr_sesion.session_token = ?");
+		
+		PreparedStatement statement = null;
+		Connection con = dbUtil.getJNDIConnection();
+		try {
+					
+			statement = con.prepareStatement(searchQuery.toString());
+			statement.setString(1, sessionToken);
+			logger.debug("SQL :" + statement.toString());
+			ResultSet result = statement.executeQuery();
+			while(result.next()){
+				Course course = new Course ();
+	
+				course.setCountry(result.getString("Country"));
+				course.setCourseId(result.getInt("C_ID"));
+				course.setCourseTitle(result.getString("Courses"));
+				course.setCostRange(result.getString("Cost_Range"));
+				course.setDurationTime(result.getString("Duration_Time"));
+				course.setDurationType(result.getString("Duration"));
+				course.setRecognition(result.getString("Recognition"));
+				course.setRecognitionType(result.getString("Recognition_Type"));
+				course.setRemarks(result.getString("Remarks_"));
+				course.setAvgWorldRank(result.getString("WR_Range"));
+				courseList.add(course);
+			}		
+			
+			ulocCrsVo.setData(courseList);
+			ulocCrsVo.setMessage("User unlocked courses successfully loaded");
+			ulocCrsVo.setStatus("1");
+			ulocCrsVo.setTotalRecords(courseList.size());
+			
+			}catch (SQLException e) {
+				ulocCrsVo.setMessage("Due to some technical problems unable to unlock course. Please try later.");
+				ulocCrsVo.setStatus("0");
+				logger.error(" getUserUnlockedCourses() : ",e); 
+				
+			}finally{
+				closeStatment(statement);
+				closeConnection(con);;
+			}		
+		return ulocCrsVo;
+	}
+
+	private void closeStatment(PreparedStatement statement) {
+		if(statement != null){
+			try{
+				statement.close();
+			}catch(Exception e){
+				logger.error("closeStatement() : ",e);
+			}
 		}
 	}
-}
 
 @Override
 public SearchResultVO advanceSearchCourses(AdvanceSearchReq advanceSearchVO) {
 	StringBuffer searchQuery = new StringBuffer(); 
+	StringBuffer countQuery = new StringBuffer();
+	
+	SearchResultVO responseData = new SearchResultVO();
+	
+	List<Course> courseList = new ArrayList<Course>();
+	Connection con = dbUtil.getJNDIConnection();	
+	
+	countQuery.append("select count(*) as total_records from university_course_attribute WHERE ");
 	
 	searchQuery.append(" SELECT  Courses, Int_Fees, Currency, Duration , Duration_Time , Cost_Savings, Remarks_, WR_Range, ");
-	searchQuery.append(" Cost_Range , Twinning_Program, Recognition , Recognition_Type, Faculty, Course_Type, C_ID, Country, ");
+	searchQuery.append(" Cost_Range , Twinning_Program, Recognition , Recognition_Type, Faculty, Course_Type, C_ID, Country, City, ");
 	searchQuery.append(" add_type, add_text, spnsr.sponser_id , spnsr.sponser_name ");
 	searchQuery.append(" FROM university_course_attribute ");
 	searchQuery.append(" left join course_sponser_details csd  on C_ID = csd.course_id ");
 	searchQuery.append(" left join sponser spnsr on spnsr.sponser_id = csd.sponser_id ");
 	searchQuery.append("  WHERE ");
-	searchQuery.append(" courses like '"+ advanceSearchVO.getSearchText()+"%'  AND  " );
+	
+
+	if (advanceSearchVO.getCourses() != null && advanceSearchVO.getCourses().length > 0) {
+		searchQuery.append(" ( " ); 		
+		 for (int i = 0 ; i < advanceSearchVO.getCourses().length ; i++ ){
+			 if (i >= 1){ 
+				 searchQuery.append(" courses like '"+ advanceSearchVO.getCourses()[i]+"%'  " );
+				 break;
+			 }else{
+				 searchQuery.append(" courses like '"+ advanceSearchVO.getCourses()[i]+"%' OR " );
+			 }
+			 
+		 }
+	 
+      searchQuery.append(" ) " );	
+	}
+	
+     if(advanceSearchVO.getCostEnd() > 0){
+    	 searchQuery.append(" AND ( Cost_Range between ").append(advanceSearchVO.getCostStart()).append( " AND  ").append(advanceSearchVO.getCostEnd()).append(") ");
+    	 
+     }
+  
+     if ( advanceSearchVO.getDurationEnd()  > 0){
+    	 searchQuery.append(" AND ( Duration_Time between ").append(advanceSearchVO.getDurationStart()).append( " AND  ").append(advanceSearchVO.getDurationEnd()).append(" ) ");
+     }
+     
+     
+     if ( advanceSearchVO.getLocationList()  != null &&  advanceSearchVO.getLocationList().length > 0){
+    	 searchQuery.append(" AND ( ");
+    	 
+    	 
+    	 for (int i = 0 ; i < advanceSearchVO.getLocationList().length ; i++){
+    		 CountryVO location = advanceSearchVO.getLocationList()[i];
+    		 
+    		 if( i == advanceSearchVO.getLocationList().length -1) {
+    		 searchQuery.append("  Country = '" ) .append(location.getCountry()).append("'  ");
+    		 
+	    		 if(location.getCity().length > 0){
+	    			 searchQuery.append(" AND ( ");
+	    		 }
+    		 for (int j = 0 ; j < location.getCity().length; j++){
+    			 if( j == location.getCity().length-1 ){
+    				 searchQuery.append("  City = '").append(location.getCity()[j]).append("' )");
+    			 }else{
+    				 searchQuery.append("  City = '").append(location.getCity()[j]).append("' OR");
+    			 }
+    		 }
+    		 
+    		 searchQuery.append(" ) ");
+    		 }else{
+    			
+        		 searchQuery.append("  Country = '" ) .append(location.getCountry()).append("' AND ( ");
+        		 
+        		 for (int j = 0 ; j < location.getCity().length; j++){
+        			 if( j == location.getCity().length-1 ){
+        				 searchQuery.append("  City = '").append(location.getCity()[j]).append("' ) ");
+        			 }else{
+        				 searchQuery.append("  City = '").append(location.getCity()[j]).append("' OR");
+        			 }
+        		 }
+        		     			 
+        		 searchQuery.append(" OR " );
+    		 } 
+    		 
+    		 
+    	 }
+    	 searchQuery.append(" ) "); 
+     }
+     
+	 if(advanceSearchVO.getLevelOfEdu() != null && advanceSearchVO.getLevelOfEdu().length > 0){
+		 searchQuery.append(" AND  " );
+		 searchQuery.append(" Course_Type in (");
+		 for(int i = 0 ; i < advanceSearchVO.getLevelOfEdu().length ; i++ ){
+			  if (i == advanceSearchVO.getLevelOfEdu().length -1){
+				  searchQuery.append("'").append(advanceSearchVO.getLevelOfEdu()[i]).append("'");
+			  }else{
+				  searchQuery.append("'").append(advanceSearchVO.getLevelOfEdu()[i]).append("'");
+				  searchQuery.append(",");
+			  }
+		 }
+		 searchQuery.append(" ) ");
+	 }
+	 
+	 if(advanceSearchVO.getUserProfole() == 1){
+		UserEducation userEdu = getUserInfo(advanceSearchVO.getSessionToken() , con);
+		if(userEdu != null &&  userEdu.getEduSystem() != null && userEdu.getEduCountry() != null ){		
+			
+			String userEduSystemScore = "0";
+			if(userEdu.getEduSystemScore() != null && userEdu.getEduSystemScore() != null)
+				userEduSystemScore = userEdu.getEduSystemScore().replace("%", "");
+			
+			searchQuery.append(" AND ( " );
+				updateQueryWithEducation(userEdu,searchQuery,countQuery,userEduSystemScore);
+			searchQuery.append(" ) " );
+		}
+	 }
+	 
+	 searchQuery.append("  order by c_id desc limit ").append( advanceSearchVO.getPageNo() * EducationSystemConstants.NO_OF_RECORD_PER_PAGE ).append(",").append(EducationSystemConstants.NO_OF_RECORD_PER_PAGE);
+	 
+	 try {
+		PreparedStatement statement = con.prepareStatement(searchQuery.toString());
+		loadResultCourses(courseList,searchQuery,statement);
+		
+		
+		if(courseList != null && courseList.size() > 0){
+			responseData.setStatus("1");
+			responseData.setPageNo(advanceSearchVO.getPageNo());
+			responseData.setData(courseList);
+			responseData.setMessage("Results found for your search criteria.");
+		}else{
+			responseData.setStatus("0");
+			responseData.setPageNo(advanceSearchVO.getPageNo());
+			responseData.setData(null);
+			responseData.setMessage("No results found. Please make sure your education information is complete. Try again later.");
+		}			
+		
+		
+		return responseData;		
+	} catch (SQLException e) {
+		logger.error(" advanceSearchCourses () : " , e);
+	}finally{
+		closeConnection(con);
+	}
+	 
+	logger.debug(searchQuery.toString());
 	return null;
 }
 	

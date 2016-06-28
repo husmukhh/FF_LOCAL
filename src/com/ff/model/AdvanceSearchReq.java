@@ -1,16 +1,20 @@
 package com.ff.model;
 
-import java.util.List;
+import com.ff.vo.CountryVO;
 
 public class AdvanceSearchReq {
 
+	private int userProfole;
+	
+	private String sessionToken;
+	private int pageNo;
 	private String [] levelOfEdu;
 	private String [] courses;
 	private int durationStart;
 	private int durationEnd;
 	private int costStart;
 	private int costEnd;
-	private List<Location> locationList;
+	private CountryVO[] locationList;
 	
 	
 	public String[] getLevelOfEdu() {
@@ -49,11 +53,31 @@ public class AdvanceSearchReq {
 	public void setCostEnd(int costEnd) {
 		this.costEnd = costEnd;
 	}
-	public List<Location> getLocationList() {
+
+	public CountryVO[] getLocationList() {
 		return locationList;
 	}
-	public void setLocationList(List<Location> locationList) {
+	public void setLocationList(CountryVO[] locationList) {
 		this.locationList = locationList;
+	}
+	public String getSessionToken() {
+		return sessionToken;
+	}
+	public void setSessionToken(String sessionToken) {
+		this.sessionToken = sessionToken;
+	}
+
+	public int getPageNo() {
+		return pageNo;
+	}
+	public void setPageNo(int pageNo) {
+		this.pageNo = pageNo;
+	}
+	public int getUserProfole() {
+		return userProfole;
+	}
+	public void setUserProfole(int userProfole) {
+		this.userProfole = userProfole;
 	}
 	
 	

@@ -21,23 +21,17 @@
 
    <bean class="org.apache.cxf.interceptor.LoggingInInterceptor" id="loggingInInterceptor" />
    <bean class="org.apache.cxf.interceptor.LoggingOutInterceptor" id="logOutInterceptor" />
-   
-   
-   <!--         <cxf:features>
-            <cxf:logging/>
-        </cxf:features> -->
-        
-    <cxf:bus>
 
-        
+    <cxf:bus>
+    
         <cxf:inInterceptors>
-            <ref bean="loggingInInterceptor" />
+            <!-- <ref bean="loggingInInterceptor" /> -->
         </cxf:inInterceptors>
         <cxf:inFaultInterceptors>
             <ref bean="loggingInInterceptor" />
         </cxf:inFaultInterceptors>
         <cxf:outInterceptors>
-            <ref bean="logOutInterceptor" />
+            <!-- <ref bean="logOutInterceptor" /> -->
         </cxf:outInterceptors>
         <cxf:outFaultInterceptors>
             <ref bean="logOutInterceptor" />
@@ -81,16 +75,6 @@
 	
 	<bean id="jacksonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider" />
 	
-<!-- 	<bean id="adminGISViews" class="org.apache.cxf.jaxrs.provider.RequestDispatcherProvider">
-	         <property name="resourcePaths">
-	            <map>
-	              <entry key="/deleteLayer/" value="/../admin-gis.html"/>
-	              <entry key="/addLayer" value="/../admin-gis.html"/>
-	              <entry key="/editLayer" value="/../admin-gis.html"/>
-	            </map>
-	         </property>
-	         <property name="beanName" value="data"/>
-	</bean>	 -->
 	
   	<jaxrs:server id="schoolServiceRest" address="/rest/SchoolService">
   		
@@ -109,9 +93,6 @@
 	      <entry key="json" value="application/json" /> 
 	    </jaxrs:extensionMappings> 
 	    
-<!-- 	    <jaxrs:features> 
-	      <cxf:logging/> 
-	    </jaxrs:features>  -->
   	</jaxrs:server>
 
 
@@ -132,9 +113,6 @@
 	      <entry key="json" value="application/json" /> 
 	    </jaxrs:extensionMappings> 
 	    
-<!-- 	    <jaxrs:features> 
-	      <cxf:logging/> 
-	    </jaxrs:features>  -->
   	</jaxrs:server>
 
 
@@ -156,9 +134,6 @@
 	      <entry key="json" value="application/json" /> 
 	    </jaxrs:extensionMappings> 
 	    
-<!-- 	    <jaxrs:features> 
-	      <cxf:logging/> 
-	    </jaxrs:features>  -->
   	</jaxrs:server>
 
 </beans>

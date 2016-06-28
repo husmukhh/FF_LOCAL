@@ -31,11 +31,11 @@ public class UserServiceImpl implements UserService {
 			session.setData(userInfo);
 			session.setMessage("Your personal information are successfully updated.");
 			session.setSessionToken(userInfo.getSessionId());
-			session.setStatus("OK");
+			session.setStatus("1");
 		}else{
 			session.setMessage("Some technical issue occured.Unable to store your information.Please try later.");
 			session.setSessionToken(userInfo.getSessionId());
-			session.setStatus("FAIL");
+			session.setStatus("0");
 		}
 		
 		return Response.ok(session).build();
@@ -52,11 +52,11 @@ public class UserServiceImpl implements UserService {
 			session.setData(userInterest);
 			session.setMessage("Your intrests are successfully updated.");
 			session.setSessionToken(userInterest.getSessionId());
-			session.setStatus("OK");
+			session.setStatus("1");
 		}else{
 			session.setMessage("Some technical issue occured.Unable to store your information.Please try later.");
 			session.setSessionToken(userInterest.getSessionId());
-			session.setStatus("FAIL");
+			session.setStatus("0");
 		}
 		return Response.ok(session).build();
 	}
@@ -72,10 +72,10 @@ public class UserServiceImpl implements UserService {
 			session.setData(userEducation);
 			session.setMessage("Education updated successfully.");
 			session.setSessionToken(userEducation.getSessionId());
-			session.setStatus("OK");
+			session.setStatus("1");
 		}else{
 			session.setMessage("Unable to update user profile. Please try later.");
-			session.setStatus("FAIL");
+			session.setStatus("0");
 		}
 		return Response.ok(session).build();
 	}
@@ -92,10 +92,10 @@ public class UserServiceImpl implements UserService {
 		
 		if(isLogout){
 			session.setMessage("Successfully logged out.");
-			session.setStatus("OK");
+			session.setStatus("1");
 		}else{
 			session.setMessage("Unable to logout. Please try to logout later.");
-			session.setStatus("FAIL");
+			session.setStatus("0");
 		}
 		return Response.ok(session).build();
 	}
