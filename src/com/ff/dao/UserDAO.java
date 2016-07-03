@@ -12,7 +12,7 @@ public interface UserDAO {
 	
 	public Session authanticateUser(User user);
 
-	public boolean saveUserInfo(UserInfo userInfo);
+	public boolean saveUserInfo(UserInfo userInfo) throws Exception;
 	public boolean updateUserInterest(UserInterest usrInterest);
 
 	public boolean updateUserEducation(UserEducation userEducation);

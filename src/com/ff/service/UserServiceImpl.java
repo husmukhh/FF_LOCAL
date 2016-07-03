@@ -25,18 +25,32 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public Response userInfo( UserInfo userInfo	) {
-		boolean isUpdated = userDao.saveUserInfo(userInfo);
 		Session session = new Session();
-		if(isUpdated == true){
-			session.setData(userInfo);
-			session.setMessage("Your personal information are successfully updated.");
+		
+		boolean isUpdated;
+		try {
+			isUpdated = userDao.saveUserInfo(userInfo);
+			if(isUpdated == true){
+				session.setData(userInfo);
+				session.setMessage("Your personal information are successfully updated.");
+				session.setSessionToken(userInfo.getSessionId());
+				session.setStatus("1");
+			}else{
+				session.setMessage("Some technical issue occured.Unable to store your information.Please try later.");
+				session.setSessionToken(userInfo.getSessionId());
+				session.setStatus("0");
+			}
+			
+		}catch(java.text.ParseException parseExe){
+			session.setMessage("Invalid date format. Format is dd/mm/yyyy");
 			session.setSessionToken(userInfo.getSessionId());
-			session.setStatus("1");
-		}else{
-			session.setMessage("Some technical issue occured.Unable to store your information.Please try later.");
-			session.setSessionToken(userInfo.getSessionId());
-			session.setStatus("0");
+			session.setStatus("0");			
+		} 
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
 		
 		return Response.ok(session).build();
 	}
@@ -117,6 +131,8 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public Response getUserProfile(Session sessionToken) {
 		UserProfileVO userProfileVO = userDao.getUserProfile(sessionToken.getSessionToken());
+		
+		
 		return Response.ok(userProfileVO).build();
 	}
 

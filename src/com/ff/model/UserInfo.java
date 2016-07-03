@@ -1,7 +1,5 @@
 package com.ff.model;
 
-import java.util.Date;
-
 public class UserInfo implements ResponseData {
 	String firstName;
 	String lastName;

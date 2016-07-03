@@ -8,14 +8,12 @@ public class UserDetails {
 
 
 
-
-	private String ieltsToeffl;
 	
-	private float read;
+/*	private float read;
 	private float write;
 	private float speak;
 	private float listen;
-	private float overall;
+	private float overall;*/
 	
 	private UserInterest userInterest = new UserInterest();
 	
@@ -31,13 +29,13 @@ public class UserDetails {
 	public void setUserEducation(UserEducation userEducation) {
 		this.userEducation = userEducation;
 	}
-	public String getIeltsToeffl() {
+/*	public String getIeltsToeffl() {
 		return ieltsToeffl;
 	}
 	public void setIeltsToeffl(String ieltsToeffl) {
 		this.ieltsToeffl = ieltsToeffl;
 	}
-	public float getRead() {
+*//*	public float getRead() {
 		return read;
 	}
 	public void setRead(float read) {
@@ -66,7 +64,7 @@ public class UserDetails {
 	}
 	public void setOverall(float overall) {
 		this.overall = overall;
-	}
+	}*/
 
 	
 	public String getEmail() {

@@ -2,12 +2,17 @@ package com.ff.model;
 
 public class UserEducation  implements ResponseData{
 	
+	private String eduLevel;
+	
 	private String eduCountry; 
 	private String eduSystem; 
 	private String eduSystemScore;
 	private String eduInst;
 	private String gpaScore;
 	private String sessionId;
+	private Integer eduId;
+	
+	private Integer isEduAorO;
 	
 	private Subjects cambrigeSubGrds;
 	
@@ -77,6 +82,24 @@ public class UserEducation  implements ResponseData{
 	}
 	public void setEduSystemScore(String eduSystemScore) {
 		this.eduSystemScore = eduSystemScore;
+	}
+	public Integer getEduId() {
+		return eduId;
+	}
+	public void setEduId(Integer eduId) {
+		this.eduId = eduId;
+	}
+	public String getEduLevel() {
+		return eduLevel;
+	}
+	public void setEduLevel(String eduLevel) {
+		this.eduLevel = eduLevel;
+	}
+	public Integer getIsEduAorO() {
+		return isEduAorO;
+	}
+	public void setIsEduAorO(Integer isEduAorO) {
+		this.isEduAorO = isEduAorO;
 	}
 	
 	

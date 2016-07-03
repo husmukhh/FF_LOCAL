@@ -10,9 +10,9 @@ public interface SQLInsertQuries {
 	String USER_CAREER_INTEREST = "INSERT INTO user_interest_carrer(user_id,career_txt , job_role) values(?,?,?)";
 	String USER_COUNTRIES_INTREST = "INSERT INTO user_intrest_country(user_id,country_code) values(?,?)";
 	
-	String USER_EDU_IELTS_TOFFEL_SCROE_INSERT = "INSERT INTO user_edu_iel_tof_score (user_id,read,write,speak,listen,overall) VALUES(? , ? , ? , ? , ? )";
+	String USER_EDU_IELTS_TOFFEL_SCROE_INSERT = "INSERT INTO user_edu_iel_tof_score (user_id,`read`,`write`,speak,listen,overall) VALUES(? , ? , ? , ? , ? ,?)";
 	String USER_EDU_A_O_SCORE_INSERT = "INSERT INTO user_edu_a_o (user_id,sub_name,grade) VALUES( ? , ? , ?)";
-	String USER_EDU_INSERT = "INSERT INTO user_edu(user_id,edu_country,edu_system,edu_sys_score,edu_institue,gpa_score,is_english_medium,toffel_ielts) VALUES (? , ? , ? , ? , ? , ? , ?,? )";
+	String USER_EDU_INSERT = "INSERT INTO user_edu(user_id,edu_country,edu_system,edu_sys_score,edu_institue,gpa_score,is_english_medium,toffel_ielts,edu_level) VALUES (? , ? , ? , ? , ? , ? , ?,?,? )";
 	
 	
 }
