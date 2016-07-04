@@ -20,6 +20,11 @@ public class JsonTester {
 
 	//	System.out.println(subject.getSubjects());		
 	}
+	
+	public String myJonTester(String json){
+		
+		return json;
+	}
 }
 
 
