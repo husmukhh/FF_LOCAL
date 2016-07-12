@@ -24,6 +24,8 @@ public interface UserDAO {
 	public boolean logOutSession(String sessionToken);
 
 	public UserProfileVO getUserProfile(String sessionId);
+
+	public Session updateProfileStatus(Session sessionToken);
 	
 
 }

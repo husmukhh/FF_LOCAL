@@ -3,20 +3,38 @@ package com.ff.util;
 public interface EducationSystemConstants {
 
 	String HSC = "HSC";
-	String GLOB_A_LEV = "GLOB_A_LEV";
+	String GLOB_A_LEV = "GLOBE_A_LEV";
 	String GLOBE_O_LEV = "GLOBE_O_LEV";
+	
 	String CHINA_GAOKAO_Gao_San = "CHINA_GAOKAO_Gao_San";
 	String CHINA_GAO_ER = "CHINA_GAO_ER";
 	String MAL_STPM = "MAL_STPM";
+	
 	String MAL_SPM = "MAL_SPM";
+	
+	
 	String SGP_A_LEVE = "SGP_A_LEVE";
-	String SGP_O_LEVE = "SGP_O_LEV";
+	
+	String SGP_O_LEV = "SGP_O_LEV";
+
+/*	String SGP_O_LEV_2 = "SGP_O_LEV_2";
+	String SGP_O_LEV_3 = "SGP_O_LEV_3";
+	String SGP_O_LEV_4 = "SGP_O_LEV_4";
+	String SGP_O_LEV_5 = "SGP_O_LEV_5";*/
+	
 	String GLOB_IB = "GLOB_IB";
 	String THA_MathayomSuksa_5_6 = "THA_MathayomSuksa_5_6";
 	String INDO_SMU = "INDO_SMU";
 	String JAPAN_KSS = "JAPAN_KSS";
 	String SRI_A_LEV = "SRI_A_LEV";
+	
 	String SRI_O_LEV = "SRI_O_LEV";
+
+/*	String SRI_O_LEV_2 = "SRI_O_LEV_2";
+	String SRI_O_LEV_3 = "SRI_O_LEV_3";
+	String SRI_O_LEV_4 = "SRI_O_LEV_4";
+	String SRI_O_LEV_5 = "SRI_O_LEV_5";*/
+	
 	String GLOB_FIRST_YEAR = "GLOB_FIRST_YEAR";
 	String GLOB_SECOND_YEAR = "GLOB_SECOND_YEAR";
 	String GLOB_DEGREE = "GLOB_DEGREE";
@@ -30,7 +48,15 @@ public interface EducationSystemConstants {
 	String UAE_REG_DM_HSC = "UAE_REG_DM_HSC";
 	String SAT_USA = "SAT_USA";
 	String UK_A_LEV = "UK_A_LEV";
+	
+	
 	String UK_O_LEV = "UK_O_LEV";
+
+/*	String UK_O_LEV_2 = "UK_O_LEV_2";
+	String UK_O_LEV_3 = "UK_O_LEV_3";
+	String UK_O_LEV_4 = "UK_O_LEV_4";
+	String UK_O_LEV_5 = "UK_O_LEV_5";*/
+	
 	String IRAN_DM_HSC = "IRAN_DM_HSC";
 	String BAN_HSC = "BAN_HSC";
 	String PHILIP_HSC = "PHILIP_HSC";
@@ -41,6 +67,14 @@ public interface EducationSystemConstants {
 	String GLOB_A_LEV_3 = "GLOB_A_LEV_3";
 	String GLOB_A_LEV_4 = "GLOB_A_LEV_4";
 	String GLOB_A_LEV_5 = "GLOB_A_LEV_5";
+	
+	String GLOB_O_LEV = "GLOB_O_LEV";
+/*	String GLOB_O_LEV_2 = "GLOB_O_LEV2";
+	String GLOB_O_LEV_3 = "GLOB_O_LEV3";
+	String GLOB_O_LEV_4 = "GLOB_O_LEV4";
+	String GLOB_O_LEV_5 = "GLOB_O_LEV5";*/
+	
+	
 	String MAL_STPM_ = "MAL_STPM_";
 	String SGP_A_LEVE_ = "SGP_A_LEVE_";
 	String SRI_A_LEV_ = "SRI_A_LEV_";

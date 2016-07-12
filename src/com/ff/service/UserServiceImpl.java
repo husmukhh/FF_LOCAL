@@ -136,6 +136,13 @@ public class UserServiceImpl implements UserService {
 		return Response.ok(userProfileVO).build();
 	}
 
+	@Override
+	public Response updateUserProfileStatus(Session sessionToken) {
+		
+		Session session = userDao.updateProfileStatus(sessionToken);
+		return Response.ok(session).build();
+	}
+
 
 	
 	

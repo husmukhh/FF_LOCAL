@@ -58,4 +58,12 @@ public interface UserService {
 	@Produces({MediaType.APPLICATION_JSON})
 	@Path("/getUserProfile")
 	public Response getUserProfile(Session sessionToken);
+	
+	
+	@POST
+	@Consumes({MediaType.APPLICATION_JSON  })
+	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/updateUserProfileStatus")
+	public Response updateUserProfileStatus(Session sessionToken);
+	
 }

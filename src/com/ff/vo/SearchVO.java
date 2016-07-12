@@ -3,8 +3,11 @@ package com.ff.vo;
 public class SearchVO {
 	private String searchText ;  
 	private String countryCode ; 
+	private String[] courseTypes;
 	private String sessionId ;
 	private int pageNo;
+	
+	
 	public String getSearchText() {
 		return searchText;
 	}
@@ -28,6 +31,12 @@ public class SearchVO {
 	}
 	public void setPageNo(int pageNo) {
 		this.pageNo = pageNo;
+	}
+	public String[] getCourseTypes() {
+		return courseTypes;
+	}
+	public void setCourseTypes(String[] courseTypes) {
+		this.courseTypes = courseTypes;
 	}
 	
 	

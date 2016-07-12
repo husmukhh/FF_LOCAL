@@ -373,7 +373,7 @@ public class UserDAOImpl implements UserDAO {
 					|| EducationSystemConstants.GLOB_A_LEV.equals( userEducation.getEduSystem() )
 					|| EducationSystemConstants.SRI_O_LEV.equals( userEducation.getEduSystem() )
 					|| EducationSystemConstants.MAL_SPM.equals( userEducation.getEduSystem() )
-					|| EducationSystemConstants.SGP_O_LEVE.equals( userEducation.getEduSystem() )
+					|| EducationSystemConstants.SGP_O_LEV.equals( userEducation.getEduSystem() )
 					|| EducationSystemConstants.UK_O_LEV.equals( userEducation.getEduSystem() )
 					|| EducationSystemConstants.GLOBE_O_LEV.equals( userEducation.getEduSystem() )
 				 )
@@ -402,7 +402,7 @@ public class UserDAOImpl implements UserDAO {
 				}
 			}*/			
 			
-			if(userEducation.getIeltsToffel().equals("TOFFEL") ||  userEducation.getIeltsToffel().equals("IELTS") && userEducation.getIeltsToffelScore() != null){
+			if(userEducation.getIeltsToffel().equals("TOEFL") ||  userEducation.getIeltsToffel().equals("IELTS") && userEducation.getIeltsToffelScore() != null){
 				Map<String,Object> subjectMap = userEducation.getIeltsToffelScore().getSubjects();
 				userEduIelTofStatement = con.prepareStatement(SQLInsertQuries.USER_EDU_IELTS_TOFFEL_SCROE_INSERT);
 				userEduIelTofStatement.setLong(1, userId);
@@ -455,7 +455,7 @@ public class UserDAOImpl implements UserDAO {
 					|| EducationSystemConstants.GLOB_A_LEV.equals( userEducation.getEduSystem() )
 					|| EducationSystemConstants.SRI_O_LEV.equals( userEducation.getEduSystem() )
 					|| EducationSystemConstants.MAL_SPM.equals( userEducation.getEduSystem() )
-					|| EducationSystemConstants.SGP_O_LEVE.equals( userEducation.getEduSystem() )
+					|| EducationSystemConstants.SGP_O_LEV.equals( userEducation.getEduSystem() )
 					|| EducationSystemConstants.UK_O_LEV.equals( userEducation.getEduSystem() )
 					|| EducationSystemConstants.GLOBE_O_LEV.equals( userEducation.getEduSystem() )
 					
@@ -733,7 +733,7 @@ public class UserDAOImpl implements UserDAO {
    	     String userProfileQuery = " SELECT " +
    	    	    " usrEd.user_id, usrEd.edu_id, usrEd.edu_country, usrEd.edu_institue, usrEd.gpa_score, usrEd.edu_system, usrEd.edu_sys_score, " +
    	    	    " usrEd.toffel_ielts, usrEd.edu_level, usrInfo.first_name, usrInfo.last_name, usrInfo.dob,usrInfo.skype_id, usrInfo.mobile_no, usrInfo.gender, " +
-   	    	    " usrInfo.country_origin, usrInfo.citizenship, usr.email " +
+   	    	    " usrInfo.country_origin, usrInfo.citizenship, usrInfo.profile_status, usr.email " +
    	    		" FROM users usr " + 
    	    	    /*" left join   user_interest_carrer  usr_carer on usr_carer.user_id = usr.id " + */
    	    	    " left join   user_edu  usrEd on usrEd.user_id = usr.id "  +
@@ -774,6 +774,7 @@ public class UserDAOImpl implements UserDAO {
 					ud.getUserInfo().setGender(resultSet.getString("gender"));
 					ud.getUserInfo().setCoutOfOrign(resultSet.getString("country_origin"));
 					ud.getUserInfo().setCitizenship(resultSet.getString("citizenship"));
+					ud.getUserInfo().setProfileStatus(resultSet.getShort("profile_status"));
 					ud.setEmail(resultSet.getString("email"));	
 /*					ud.getUserInterest().setCareerIntrests(new String [] {resultSet.getString("career_txt") });
 					ud.getUserInterest().setCountryIntrests(new String [] {resultSet.getString("country_code") });
@@ -788,7 +789,7 @@ public class UserDAOImpl implements UserDAO {
 					if (EducationSystemConstants.GLOB_A_LEV.equals( ud.getUserEducation().getEduSystem() ) ||
 						EducationSystemConstants.GLOBE_O_LEV.equals(ud.getUserEducation().getEduSystem() ) ||
 						EducationSystemConstants.SGP_A_LEVE.equals(ud.getUserEducation().getEduSystem())  ||
-						EducationSystemConstants.SGP_O_LEVE.equals(ud.getUserEducation().getEduSystem() ) ||
+						EducationSystemConstants.SGP_O_LEV.equals(ud.getUserEducation().getEduSystem() ) ||
 						EducationSystemConstants.SRI_A_LEV.equals(ud.getUserEducation().getEduSystem()) ||
 						EducationSystemConstants.SRI_O_LEV.equals(ud.getUserEducation().getEduSystem())
 							){
@@ -1025,6 +1026,67 @@ public class UserDAOImpl implements UserDAO {
 			}
 		}
 		
+	}
+
+
+	@Override
+	public Session updateProfileStatus(Session sessionToken) {
+	   	 PreparedStatement statement = null;
+		 Connection con = null;
+		 try {
+				
+				con = dbUtil.getJNDIConnection();
+				con.setAutoCommit(false);
+				long userId = getUserIdBySession(sessionToken.getSessionToken(), con);
+				
+				if(userId > 0){
+					short userProfileStatus = Short.parseShort(sessionToken.getSessionToken());
+					String updateProfileStatusQuery = "update user_info  set profile_status = ? where user_id = ?";
+					
+					statement = con.prepareStatement(updateProfileStatusQuery);
+					statement.setShort(1, userProfileStatus );
+					statement.setLong(2, userId);
+					
+					int rowAffected = statement.executeUpdate();
+					
+					if(rowAffected > 0){
+						
+						sessionToken.setMessage("Profile Status updated successfuly.");
+						sessionToken.setStatus("1");
+						
+					}else{
+						sessionToken.setStatus("0");
+						sessionToken.setMessage("Unable to update user profile status. Query executed !.");						
+					}
+					
+				}else{
+					sessionToken.setStatus("0");
+					sessionToken.setMessage("Invalid session id. Please login again.");
+				}
+				
+			}catch(NumberFormatException sqlExe){
+				sessionToken.setStatus("0");
+				sessionToken.setMessage("Please provide valid profile status 0 or 1. Error code : " + sqlExe.getMessage());
+				logger.error(sqlExe.getMessage());
+				sqlExe.printStackTrace();
+				
+			}
+		 	catch(SQLException sqlExe){
+				sessionToken.setStatus("0");
+				sessionToken.setMessage("Unable to update user profile status. Some technical error occured. \n Error Code : " + sqlExe.getMessage());
+				logger.error(sqlExe.getMessage());
+				sqlExe.printStackTrace();
+			}
+		 	catch(Exception sqlExe){
+				sessionToken.setStatus("0");
+				sessionToken.setMessage("Unable to update user profile status. Some technical error occured. \n Error Code : " + sqlExe.getMessage());		 		
+				logger.error(sqlExe.getMessage());
+				sqlExe.printStackTrace();
+			}
+		return sessionToken;
 	}	
 	
+
+
+
 }

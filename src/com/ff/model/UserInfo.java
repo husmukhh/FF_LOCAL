@@ -11,6 +11,7 @@ public class UserInfo implements ResponseData {
 	String citizenship;
 	String sessionId;
 	String dob;
+	short  profileStatus;
 	
 	
 	public String getLastName() {
@@ -67,6 +68,12 @@ public class UserInfo implements ResponseData {
 	}
 	public void setDob(String dob) {
 		this.dob = dob;
+	}
+	public short getProfileStatus() {
+		return profileStatus;
+	}
+	public void setProfileStatus(short profileStatus) {
+		this.profileStatus = profileStatus;
 	}
 
 

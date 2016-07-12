@@ -2,7 +2,7 @@
 <configuration>
 
 <!-- 	<property name="DEV_HOME" value="D:/apache-tomcat-7.0.62/logs" /> -->
-	<property name="DEV_HOME" value="/usr/local/share/jboss/standalone/log" /> 
+	<property name="DEV_HOME" value="D:/jboss-eap-7.0.0/jboss-eap-7.0/standalone/log" /> 
 	
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">

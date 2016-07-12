@@ -346,8 +346,22 @@ public class CourseDAOImpl implements CourseDAO{
 			}
 		case EducationSystemConstants.GLOBE_O_LEV :{
 			logger.debug(" search() Education System :  " + EducationSystemConstants.GLOBE_O_LEV);
-			searchQuery.append(" ").append(EducationSystemConstants.GLOBE_O_LEV ).append(" <= ").append(userEdu.getEduSystemScore());
-			countQuery.append(" ").append(EducationSystemConstants.GLOBE_O_LEV ).append(" <= ").append(userEdu.getEduSystemScore());
+			 List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
+			 Collections.sort(subjGradeList);
+			 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
+				 String grade = subjGradeList.get(i);
+				 grade = grade.replace("+", "");
+				 grade = grade.replace("-", "");
+				 
+				 if( i  == subjGradeList.size()-3	){
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.GLOB_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
+				 	 countQuery.append(" UPPER(").append(EducationSystemConstants.GLOB_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");}
+				 else{
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.GLOB_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+				 	 countQuery.append(" UPPER(").append(EducationSystemConstants.GLOB_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+				 	}
+
+			 }
 			break;
 			}
 		case EducationSystemConstants.IND_HSC_ISC_SSC :{
@@ -400,8 +414,23 @@ public class CourseDAOImpl implements CourseDAO{
 			}
 		case EducationSystemConstants.MAL_SPM :{
 			logger.debug(" search() Education System :  " + EducationSystemConstants.MAL_SPM);
-			searchQuery.append(" ").append(EducationSystemConstants.MAL_SPM ).append(" <= ").append(userEdu.getEduSystemScore());
-			countQuery.append(" ").append(EducationSystemConstants.MAL_SPM ).append(" <= ").append(userEdu.getEduSystemScore());
+			List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
+			 Collections.sort(subjGradeList);
+			 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
+				 String grade = subjGradeList.get(i);
+				 
+				 grade = grade.replace("+", "");
+				 grade = grade.replace("-", "");
+				 if( i  == subjGradeList.size()-3	){
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.MAL_SPM).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
+					 countQuery.append(" UPPER(").append(EducationSystemConstants.MAL_SPM).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
+					 }
+				 else{
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.MAL_SPM).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+					 countQuery.append(" UPPER(").append(EducationSystemConstants.MAL_SPM).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+					 }
+
+			 }
 			break;
 			}
 		case EducationSystemConstants.MAL_STPM :{
@@ -483,10 +512,24 @@ public class CourseDAOImpl implements CourseDAO{
 			 }
 			break;
 			}
-		case EducationSystemConstants.SGP_O_LEVE :{
-			logger.debug(" search() Education System :  " + EducationSystemConstants.SGP_O_LEVE);
-			searchQuery.append(" ").append(EducationSystemConstants.SGP_O_LEVE ).append(" >= ").append(userEdu.getEduSystemScore());
-			countQuery.append(" ").append(EducationSystemConstants.SGP_O_LEVE ).append(" >= ").append(userEdu.getEduSystemScore());
+		case EducationSystemConstants.SGP_O_LEV :{
+			logger.debug(" search() Education System :  " + EducationSystemConstants.SGP_O_LEV);
+			 List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
+			 Collections.sort(subjGradeList);
+			 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
+				 String grade = subjGradeList.get(i);
+				 grade = grade.replace("+", "");
+				 grade = grade.replace("-", "");
+				 
+				 if( i  == subjGradeList.size()-3	){
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.SGP_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
+				 	 countQuery.append(" UPPER(").append(EducationSystemConstants.SGP_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");}
+				 else{
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.SGP_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+				 	 countQuery.append(" UPPER(").append(EducationSystemConstants.SGP_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+				 	}
+
+			 }
 			break;
 			}
 		case EducationSystemConstants.SRI_A_LEV :{
@@ -510,8 +553,22 @@ public class CourseDAOImpl implements CourseDAO{
 			}
 		case EducationSystemConstants.SRI_O_LEV :{
 			logger.debug(" search() Education System :  " + EducationSystemConstants.SRI_O_LEV);
-			searchQuery.append(" ").append(EducationSystemConstants.SRI_O_LEV ).append(" >= ").append(userEdu.getEduSystemScore());
-			countQuery.append(" ").append(EducationSystemConstants.SRI_O_LEV ).append(" >= ").append(userEdu.getEduSystemScore());
+			 List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
+			 Collections.sort(subjGradeList);
+			 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
+				 String grade = subjGradeList.get(i);
+				 grade = grade.replace("+", "");
+				 grade = grade.replace("-", "");
+				 
+				 if( i  == subjGradeList.size()-3	){
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.SRI_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
+				 	 countQuery.append(" UPPER(").append(EducationSystemConstants.SRI_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");}
+				 else{
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.SRI_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+				 	 countQuery.append(" UPPER(").append(EducationSystemConstants.SRI_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+				 	}
+
+			 }
 			break;
 			}
 		case EducationSystemConstants.THA_MathayomSuksa_5_6 :{
@@ -557,8 +614,23 @@ public class CourseDAOImpl implements CourseDAO{
 			}
 		case EducationSystemConstants.UK_O_LEV :{
 			logger.debug(" search() Education System :  " + EducationSystemConstants.UK_O_LEV);
-			searchQuery.append(" ").append(EducationSystemConstants.UK_O_LEV ).append(" >= ").append(userEdu.getEduSystemScore());
-			countQuery.append(" ").append(EducationSystemConstants.UK_O_LEV ).append(" >= ").append(userEdu.getEduSystemScore());
+			List<String> subjGradeList = new ArrayList( userEdu.getCambrigeSubGrds().getSubjects().values()) ;
+			 Collections.sort(subjGradeList);
+			 for(int i = 0 ; i < subjGradeList.size()-2 ; i++){
+				 String grade = subjGradeList.get(i);
+				 
+				 grade = grade.replace("+", "");
+				 grade = grade.replace("-", "");
+				 if( i  == subjGradeList.size()-3	){
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.UK_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
+					 countQuery.append(" UPPER(").append(EducationSystemConstants.UK_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("'  ");
+					 }
+				 else{
+					 searchQuery.append(" UPPER(").append(EducationSystemConstants.UK_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+					 countQuery.append(" UPPER(").append(EducationSystemConstants.UK_O_LEV).append(i+1).append( ") >= '").append(grade.toUpperCase()).append("' AND ");
+					 }
+
+			 }
 			break;
 			}
 		case EducationSystemConstants.US_GPA :{
@@ -701,7 +773,14 @@ public class CourseDAOImpl implements CourseDAO{
 					EducationSystemConstants.UK_A_LEV.equals(userEdu.getEduSystem() ) ||
 					EducationSystemConstants.SGP_A_LEVE.equals(userEdu.getEduSystem() ) ||
 					EducationSystemConstants.MAL_STPM.equals(userEdu.getEduSystem() ) ||
-					EducationSystemConstants.SRI_A_LEV.equals(userEdu.getEduSystem() ) 
+					EducationSystemConstants.SRI_A_LEV.equals(userEdu.getEduSystem())  ||
+					EducationSystemConstants.SRI_O_LEV.equals( userEdu.getEduSystem() ) || 
+					EducationSystemConstants.MAL_SPM.equals( userEdu.getEduSystem() ) 	|| 
+					EducationSystemConstants.SGP_O_LEV.equals( userEdu.getEduSystem() ) || 
+					EducationSystemConstants.UK_O_LEV.equals( userEdu.getEduSystem() ) 	|| 
+					EducationSystemConstants.GLOBE_O_LEV.equals( userEdu.getEduSystem()							
+							
+							) 
 					) {
 				userEduStatement = con.prepareStatement(SQLSelectQueries.SELECT_USERS_EDU_ALEVEL_WHERE);
 				userEduStatement.setLong(1, userId);
