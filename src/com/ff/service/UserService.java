@@ -30,6 +30,7 @@ import com.ff.model.UserEducation;
 import com.ff.model.UserInfo;
 import com.ff.model.UserInterest;
 
+<<<<<<< HEAD
 
 public interface UserService {
 
@@ -90,3 +91,57 @@ public interface UserService {
 	public Response activateUser(@PathParam(value="p1") String p1,@PathParam(value="p2") String p2,@PathParam(value="p3") String p3);
 	
 }
+=======
+public interface UserService {
+
+	@POST
+	@Consumes({"application/xml",MediaType.APPLICATION_JSON,"application/x-www-form-urlencoded"})
+	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/login")
+	public Response login( User user );
+	
+	@POST
+	@Consumes({"application/xml","application/json","application/x-www-form-urlencoded"})
+	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/registration")
+	public Response registration( User user);	
+	
+	@POST
+	@Consumes({"application/xml","application/json","application/x-www-form-urlencoded"})
+	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/logout")
+	public Response logOut(Session sessionToken);
+	
+	
+	@POST
+	@Consumes({"application/xml",MediaType.APPLICATION_JSON,"application/x-www-form-urlencoded"})
+	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/userInfo")	
+	public Response userInfo(UserInfo userInfo);
+	
+	@POST
+	@Consumes({"application/xml",MediaType.APPLICATION_JSON,"application/x-www-form-urlencoded"})
+	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/userInterests")
+	public Response userInterests(UserInterest userIntrest );
+	
+	@POST
+	@Consumes({MediaType.APPLICATION_JSON  })
+	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/userEducation")
+	public Response userEducation(UserEducation userEducation);	
+	
+	
+	@POST
+	@Consumes({MediaType.APPLICATION_JSON  })
+	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/getUserProfile")
+	public Response getUserProfile(Session sessionToken);
+	
+	@GET
+	@Path("/activateUser")
+	@Produces({MediaType.APPLICATION_JSON})	
+	public Response activateUser(@PathParam(value="p1") String p1,@PathParam(value="p2") String p2,@PathParam(value="p3") String p3);
+	
+}
+>>>>>>> e4e967a24821c9a8096dceee2d2307c4d78eb853

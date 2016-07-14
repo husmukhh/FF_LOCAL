@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -50,6 +49,20 @@ public class UserDAOImpl implements UserDAO {
 
 				con.setAutoCommit(false);
 				
+				statement = con.prepareStatement(SQLSelectQueries.SELECT_USERS_ACTIVE);
+				statement.setInt(1, AppConstants.ACTIVE);
+				statement.setString(2, user.getUserName());
+				logger.debug(" SQL [Check Active] : " + statement.toString());
+				ResultSet resultActive = statement.executeQuery();
+				if(!resultActive.next()){
+					if(resultActive.getRow() == 0){
+						session.setStatus("1");
+						session.setMessage("User is not activated. Please check your email for activation.");
+						return session;					
+					}
+				}
+				
+
 				statement = con.prepareStatement(SQLSelectQueries.SELECT_USERS_WHERE);
 				statement.setString(1, user.getUserName());
 				statement.setString(2, user.getPassword());
@@ -60,7 +73,7 @@ public class UserDAOImpl implements UserDAO {
 				while(result.next()){
 					user.setUserId(result.getLong("id"));
 					sessionToken = result.getString("session_token");
-					
+
 					if(sessionToken != null && !sessionToken.isEmpty()){
 						logOutSession(sessionToken);
 					}					
@@ -336,6 +349,39 @@ public class UserDAOImpl implements UserDAO {
 		return userId;
 	}
 
+	public long getUserEmail(String email) throws Exception{
+		Connection con = dbUtil.getJNDIConnection();
+		PreparedStatement statement = null;
+		long userId = -1L;
+		try{
+			if(con != null){
+				statement = con.prepareStatement(SQLSelectQueries.SELECT_USERS_EMAIL_WHERE);
+				statement.setString(1, email);
+				logger.debug(" SQL : "+statement.toString());
+				ResultSet result = statement.executeQuery();
+				while(result.next()){
+					userId = result.getLong(1);
+				}				
+			}else{
+				logger.error("Throw error : getUserEmail , connection is null.");
+				throw new Exception ("Error while checking duplicate user email");
+			}
+
+		}catch(SQLException exe){
+
+				logger.error("getUserEmail()" , exe);
+		}finally{
+			try {
+				closeStatement(statement);
+				
+				closeConnection(con);
+			} catch (SQLException e) {
+
+				logger.error("finally : getUserEmail : ",e);
+			}
+		}
+		return userId;
+	}
 
 	@Override
 	public boolean updateUserEducation(UserEducation userEducation) {
@@ -402,7 +448,8 @@ public class UserDAOImpl implements UserDAO {
 				}
 			}*/			
 			
-			if(userEducation.getIeltsToffel().equals("TOEFL") ||  userEducation.getIeltsToffel().equals("IELTS") && userEducation.getIeltsToffelScore() != null){
+
+			if(userEducation.getIeltsToffel().equals("TOFFEL") ||  userEducation.getIeltsToffel().equals("IELTS") && userEducation.getIeltsToffelScore() != null){
 				Map<String,Object> subjectMap = userEducation.getIeltsToffelScore().getSubjects();
 				userEduIelTofStatement = con.prepareStatement(SQLInsertQuries.USER_EDU_IELTS_TOFFEL_SCROE_INSERT);
 				userEduIelTofStatement.setLong(1, userId);
@@ -635,11 +682,26 @@ public class UserDAOImpl implements UserDAO {
 		PreparedStatement statement = null;
 		Session session = new Session();
 		Connection con = null;
+
+		
 		try {
 			 con = dbUtil.getJNDIConnection();
 			 con.setAutoCommit(false);
-			long existId = getUserId(user.getUserName());
-			if(existId < 0){
+				long existId = getUserId(user.getUserName());
+				if(existId > 0){
+					session.setStatus("0");
+					session.setMessage("Username already registered.");
+					return session;
+				}
+				
+				long existEmail = getUserEmail(user.getEmail());
+				if(existEmail > 0 ){
+					session.setStatus("0");
+					session.setMessage("Provided email is already registered.");
+					return session;
+				}
+					
+
 				statement = con.prepareStatement(SQLInsertQuries.USER_INSERT);
 				statement.setString(1, user.getUserName());
 				statement.setString(2, user.getEmail());
@@ -650,12 +712,14 @@ public class UserDAOImpl implements UserDAO {
 				if(rowAffected > 0) {
 					session  = authanticateUser(user.getUserName() , user.getPassword() , con);
 				}
-			}else{
+
+			else{
 				session.setStatus("0");
 				session.setMessage("EmailId or Username already registered.");
 				
 			}
-		} catch (SQLException e) {
+		}
+           catch (SQLException e) {
 			session.setStatus("0");
 			session.setMessage("Unable to register user. Please try again later");
 
@@ -663,7 +727,7 @@ public class UserDAOImpl implements UserDAO {
 		} catch (Exception e) {
 			session.setStatus("0");
 			session.setMessage("Unable to register user. Please try again later");
-			
+
 			logger.error("registerUser() : ",e);
 		}finally{
 			
@@ -790,9 +854,8 @@ public class UserDAOImpl implements UserDAO {
 						EducationSystemConstants.GLOBE_O_LEV.equals(ud.getUserEducation().getEduSystem() ) ||
 						EducationSystemConstants.SGP_A_LEVE.equals(ud.getUserEducation().getEduSystem())  ||
 						EducationSystemConstants.SGP_O_LEV.equals(ud.getUserEducation().getEduSystem() ) ||
-						EducationSystemConstants.SRI_A_LEV.equals(ud.getUserEducation().getEduSystem()) ||
-						EducationSystemConstants.SRI_O_LEV.equals(ud.getUserEducation().getEduSystem())
-							){
+						EducationSystemConstants.SRI_A_LEV.equals(ud.getUserEducation().getEduSystem()) 
+						){
 						
 						String subScore = "select * from user_edu_a_o where user_id = ? " ;
 						PreparedStatement subScoreStatement = con.prepareStatement(subScore);
@@ -1141,38 +1204,4 @@ public class UserDAOImpl implements UserDAO {
 	}
 
 
-	
-	public long getUserEmail(String email) throws Exception{
-		Connection con = dbUtil.getJNDIConnection();
-		PreparedStatement statement = null;
-		long userId = -1L;
-		try{
-			if(con != null){
-				statement = con.prepareStatement(SQLSelectQueries.SELECT_USERS_EMAIL_WHERE);
-				statement.setString(1, email);
-				logger.debug(" SQL : "+statement.toString());
-				ResultSet result = statement.executeQuery();
-				while(result.next()){
-					userId = result.getLong(1);
-				}				
-			}else{
-				logger.error("Throw error : getUserEmail , connection is null.");
-				throw new Exception ("Error while checking duplicate user email");
-			}
-
-		}catch(SQLException exe){
-
-				logger.error("getUserEmail()" , exe);
-		}finally{
-			try {
-				closeStatement(statement);
-				
-				closeConnection(con);
-			} catch (SQLException e) {
-
-				logger.error("finally : getUserEmail : ",e);
-			}
-		}
-		return userId;
-	}
 }

@@ -1,5 +1,6 @@
 package com.ff.service;
 
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -8,18 +9,30 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.ff.dao.UserDAO;
+
+import javax.ws.rs.core.Response;
+
+import com.ff.dao.UserDAO;
+import com.ff.mail.MailService;
+import com.ff.model.AppConstants;
+
 import com.ff.model.Session;
 import com.ff.model.User;
 import com.ff.model.UserEducation;
 import com.ff.model.UserInfo;
 import com.ff.model.UserInterest;
+
+import com.ff.util.ApplicationEncoding;
+
 import com.ff.vo.UserProfileVO;
 
 public class UserServiceImpl implements UserService {
 	
-	
-	
+
 	UserDAO userDao;
+	MailService jMailService;
+	
+
 	
 	@Override
 	public Response login(User user) {
@@ -122,6 +135,11 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public Response registration(User user) {
 		Session session = userDao.registerUser( user);
+
+		if(Integer.parseInt(session.getStatus()) == AppConstants.SUCCESS){
+			jMailService.sendUserActivationMail(user.getUserName(),user.getEmail(), session.getSessionToken());
+		}
+
 		return Response.ok(session).build();
 	}
 
@@ -141,24 +159,34 @@ public class UserServiceImpl implements UserService {
 		return Response.ok(userProfileVO).build();
 	}
 
+
 	@Override
 	public Response updateUserProfileStatus(Session sessionToken) {
 		
 		Session session = userDao.updateProfileStatus(sessionToken);
 		return Response.ok(session).build();
 	}
+	
+	public MailService getjMailService() {
+		return jMailService;
+	}
+
+	public void setjMailService(MailService jMailService) {
+		this.jMailService = jMailService;
+	}
 
 	@Override
-	public Response activateUser(String p1, String p2, String p3) {
+	public Session activateAccount(String p1,String p2, String p3){
 		User  user = new User();
 		user.setUserName(ApplicationEncoding.decodeText(p2));
 		user.setEmail(ApplicationEncoding.decodeText(p3));
 		Session session = new Session();
 		session.setSessionToken(p1);
 		user.setSession(session);
-		Session ss = userDao.activateUser(user);
-		return Response.ok(ss).build();
-	}	
-	
-	
+		return userDao.activateUser(user);
+
+	}
+
+
+
 }

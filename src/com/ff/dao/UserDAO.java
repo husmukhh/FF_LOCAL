@@ -25,8 +25,10 @@ public interface UserDAO {
 
 	public UserProfileVO getUserProfile(String sessionId);
 
+
 	public Session updateProfileStatus(Session sessionToken);
 	
 	public Session activateUser(User user);
 	
+
 }
