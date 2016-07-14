@@ -27,5 +27,6 @@ public interface UserDAO {
 
 	public Session updateProfileStatus(Session sessionToken);
 	
-
+	public Session activateUser(User user);
+	
 }

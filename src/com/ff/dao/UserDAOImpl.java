@@ -1087,6 +1087,92 @@ public class UserDAOImpl implements UserDAO {
 	}	
 	
 
+	
+	@Override
+	public Session activateUser(User user) {
+		PreparedStatement statement = null;
+		Connection con = null;
+		Session session = new Session();
+		try {
+			 con = dbUtil.getJNDIConnection();
+			 con.setAutoCommit(false);
+				long existId = getUserId(user.getUserName());
+				if(existId > 0){
+					session.setStatus("0");
+					session.setMessage("Account activation link is not valid, Please contact Seeka Team.");
+					return session;
+				}
+				
+				long existEmail = getUserEmail(user.getEmail());
+				if(existEmail > 0 ){
+					session.setStatus("0");
+					session.setMessage(" Account activation link is not valid, Please contact Seeka Team.");
+					return session;
+				}
+					
+				statement = con.prepareStatement(SQLUpdateQuries.USER_UPDATE_ACTIVE);
+				statement.setInt(1, AppConstants.ACTIVE);
+				statement.setString(2, user.getUserName());
+				statement.setString(3, user.getEmail());
+				statement.setString(4, user.getSession().getSessionToken());
+				logger.debug(" SQL : "+statement.toString());
+				int rowAffected = statement.executeUpdate();
+				con.commit();
+				if(rowAffected > 0) {
+					session.setStatus("1");
+					session.setMessage("User successfully activated.");
+					//session  = authanticateUser(user.getUserName() , user.getPassword() , con);
+				}
+		}catch (Exception e) {
+			session.setStatus("0");
+			session.setMessage("Unable to activate user. Please try again later");
+			logger.error("activateUser() : ",e);
+		}finally{
+			
+			try {
+				closeStatement(statement);
+				closeConnection(con);
+			} catch (SQLException e) {
+				logger.error("finnaly activateUser() : ",e);
+			}
+		}
+		
+		return session;
+	}
 
 
+	
+	public long getUserEmail(String email) throws Exception{
+		Connection con = dbUtil.getJNDIConnection();
+		PreparedStatement statement = null;
+		long userId = -1L;
+		try{
+			if(con != null){
+				statement = con.prepareStatement(SQLSelectQueries.SELECT_USERS_EMAIL_WHERE);
+				statement.setString(1, email);
+				logger.debug(" SQL : "+statement.toString());
+				ResultSet result = statement.executeQuery();
+				while(result.next()){
+					userId = result.getLong(1);
+				}				
+			}else{
+				logger.error("Throw error : getUserEmail , connection is null.");
+				throw new Exception ("Error while checking duplicate user email");
+			}
+
+		}catch(SQLException exe){
+
+				logger.error("getUserEmail()" , exe);
+		}finally{
+			try {
+				closeStatement(statement);
+				
+				closeConnection(con);
+			} catch (SQLException e) {
+
+				logger.error("finally : getUserEmail : ",e);
+			}
+		}
+		return userId;
+	}
 }

@@ -1,5 +1,10 @@
 package com.ff.service;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.ff.dao.UserDAO;
@@ -143,7 +148,17 @@ public class UserServiceImpl implements UserService {
 		return Response.ok(session).build();
 	}
 
-
+	@Override
+	public Response activateUser(String p1, String p2, String p3) {
+		User  user = new User();
+		user.setUserName(ApplicationEncoding.decodeText(p2));
+		user.setEmail(ApplicationEncoding.decodeText(p3));
+		Session session = new Session();
+		session.setSessionToken(p1);
+		user.setSession(session);
+		Session ss = userDao.activateUser(user);
+		return Response.ok(ss).build();
+	}	
 	
 	
 }

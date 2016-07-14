@@ -11,7 +11,25 @@ import com.ff.model.Session;
 import com.ff.model.User;
 import com.ff.model.UserEducation;
 import com.ff.model.UserInfo;
+import com.ff.model.UserInterest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.ff.model.Session;
+import com.ff.model.User;
+import com.ff.model.UserEducation;
+import com.ff.model.UserInfo;
 import com.ff.model.UserInterest;
+
 
 public interface UserService {
 
@@ -65,5 +83,10 @@ public interface UserService {
 	@Produces({MediaType.APPLICATION_JSON})
 	@Path("/updateUserProfileStatus")
 	public Response updateUserProfileStatus(Session sessionToken);
+	
+	@GET
+	@Path("/activateUser")
+	@Produces({MediaType.APPLICATION_JSON})	
+	public Response activateUser(@PathParam(value="p1") String p1,@PathParam(value="p2") String p2,@PathParam(value="p3") String p3);
 	
 }

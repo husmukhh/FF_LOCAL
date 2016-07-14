@@ -9,4 +9,6 @@ public interface AppConstants {
 	public static final String WRITE = "write";
 	public static final String SPEAK = "speak";
 	public static final String LISTEN = "listen";
+	
+	public static final int ACTIVE = 1;
 }
