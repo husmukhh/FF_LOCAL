@@ -15,4 +15,5 @@ public interface SQLInsertQuries {
 	String USER_EDU_INSERT = "INSERT INTO user_edu(user_id,edu_country,edu_system,edu_sys_score,edu_institue,gpa_score,is_english_medium,toffel_ielts,edu_level) VALUES (? , ? , ? , ? , ? , ? , ?,?,? )";
 	
 	
+	
 }

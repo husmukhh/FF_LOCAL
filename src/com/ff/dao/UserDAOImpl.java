@@ -23,6 +23,7 @@ import com.ff.model.UserDetails;
 import com.ff.model.UserEducation;
 import com.ff.model.UserInfo;
 import com.ff.model.UserInterest;
+import com.ff.util.ApplicationConstant;
 import com.ff.util.EducationSystemConstants;
 import com.ff.vo.EligibityStatus;
 import com.ff.vo.LoggedInDataVO;
@@ -50,6 +51,19 @@ public class UserDAOImpl implements UserDAO {
 
 				con.setAutoCommit(false);
 				
+				statement = con.prepareStatement(SQLSelectQueries.SELECT_USERS_ACTIVE);
+				statement.setInt(1, AppConstants.ACTIVE);
+				statement.setString(2, user.getUserName());
+				logger.debug(" SQL [Check Active] : " + statement.toString());
+				ResultSet resultActive = statement.executeQuery();
+				if(!resultActive.next()){
+					if(resultActive.getRow() == 0){
+						session.setStatus("1");
+						session.setMessage("User is not activated. Please check your email for activation.");
+						return session;					
+					}
+				}
+				
 				statement = con.prepareStatement(SQLSelectQueries.SELECT_USERS_WHERE);
 				statement.setString(1, user.getUserName());
 				statement.setString(2, user.getPassword());
@@ -60,7 +74,6 @@ public class UserDAOImpl implements UserDAO {
 				while(result.next()){
 					user.setUserId(result.getLong("id"));
 					sessionToken = result.getString("session_token");
-					
 					if(sessionToken != null && !sessionToken.isEmpty()){
 						logOutSession(sessionToken);
 					}					
@@ -335,7 +348,39 @@ public class UserDAOImpl implements UserDAO {
 		}
 		return userId;
 	}
+	public long getUserEmail(String email) throws Exception{
+		Connection con = dbUtil.getJNDIConnection();
+		PreparedStatement statement = null;
+		long userId = -1L;
+		try{
+			if(con != null){
+				statement = con.prepareStatement(SQLSelectQueries.SELECT_USERS_EMAIL_WHERE);
+				statement.setString(1, email);
+				logger.debug(" SQL : "+statement.toString());
+				ResultSet result = statement.executeQuery();
+				while(result.next()){
+					userId = result.getLong(1);
+				}				
+			}else{
+				logger.error("Throw error : getUserEmail , connection is null.");
+				throw new Exception ("Error while checking duplicate user email");
+			}
 
+		}catch(SQLException exe){
+
+				logger.error("getUserEmail()" , exe);
+		}finally{
+			try {
+				closeStatement(statement);
+				
+				closeConnection(con);
+			} catch (SQLException e) {
+
+				logger.error("finally : getUserEmail : ",e);
+			}
+		}
+		return userId;
+	}
 
 	@Override
 	public boolean updateUserEducation(UserEducation userEducation) {
@@ -635,11 +680,24 @@ public class UserDAOImpl implements UserDAO {
 		PreparedStatement statement = null;
 		Session session = new Session();
 		Connection con = null;
+		
 		try {
 			 con = dbUtil.getJNDIConnection();
 			 con.setAutoCommit(false);
-			long existId = getUserId(user.getUserName());
-			if(existId < 0){
+				long existId = getUserId(user.getUserName());
+				if(existId > 0){
+					session.setStatus("0");
+					session.setMessage("Username already registered.");
+					return session;
+				}
+				
+				long existEmail = getUserEmail(user.getEmail());
+				if(existEmail > 0 ){
+					session.setStatus("0");
+					session.setMessage("Provided email is already registered.");
+					return session;
+				}
+					
 				statement = con.prepareStatement(SQLInsertQuries.USER_INSERT);
 				statement.setString(1, user.getUserName());
 				statement.setString(2, user.getEmail());
@@ -650,20 +708,13 @@ public class UserDAOImpl implements UserDAO {
 				if(rowAffected > 0) {
 					session  = authanticateUser(user.getUserName() , user.getPassword() , con);
 				}
-			}else{
-				session.setStatus("0");
-				session.setMessage("EmailId or Username already registered.");
-				
-			}
 		} catch (SQLException e) {
 			session.setStatus("0");
 			session.setMessage("Unable to register user. Please try again later");
-
 			logger.error("registerUser() : ",e);
 		} catch (Exception e) {
 			session.setStatus("0");
 			session.setMessage("Unable to register user. Please try again later");
-			
 			logger.error("registerUser() : ",e);
 		}finally{
 			
@@ -1025,6 +1076,59 @@ public class UserDAOImpl implements UserDAO {
 			}
 		}
 		
+	}
+
+
+	@Override
+	public Session activateUser(User user) {
+		PreparedStatement statement = null;
+		Connection con = null;
+		Session session = new Session();
+		try {
+			 con = dbUtil.getJNDIConnection();
+			 con.setAutoCommit(false);
+				long existId = getUserId(user.getUserName());
+				if(existId > 0){
+					session.setStatus("0");
+					session.setMessage("Account activation link is not valid, Please contact Seeka Team.");
+					return session;
+				}
+				
+				long existEmail = getUserEmail(user.getEmail());
+				if(existEmail > 0 ){
+					session.setStatus("0");
+					session.setMessage(" Account activation link is not valid, Please contact Seeka Team.");
+					return session;
+				}
+					
+				statement = con.prepareStatement(SQLUpdateQuries.USER_UPDATE_ACTIVE);
+				statement.setInt(1, AppConstants.ACTIVE);
+				statement.setString(2, user.getUserName());
+				statement.setString(3, user.getEmail());
+				statement.setString(4, user.getSession().getSessionToken());
+				logger.debug(" SQL : "+statement.toString());
+				int rowAffected = statement.executeUpdate();
+				con.commit();
+				if(rowAffected > 0) {
+					session.setStatus("1");
+					session.setMessage("User successfully activated.");
+					//session  = authanticateUser(user.getUserName() , user.getPassword() , con);
+				}
+		}catch (Exception e) {
+			session.setStatus("0");
+			session.setMessage("Unable to activate user. Please try again later");
+			logger.error("activateUser() : ",e);
+		}finally{
+			
+			try {
+				closeStatement(statement);
+				closeConnection(con);
+			} catch (SQLException e) {
+				logger.error("finnaly activateUser() : ",e);
+			}
+		}
+		
+		return session;
 	}	
 	
 }

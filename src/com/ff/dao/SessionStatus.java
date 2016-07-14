@@ -5,4 +5,5 @@ public interface SessionStatus {
 	String LOGOUT = "OUT";
 	String LOCKED = "LOC";
 	
+	
 }
