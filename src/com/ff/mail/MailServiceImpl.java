@@ -2,21 +2,22 @@ package com.ff.mail;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
-import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.ff.util.ApplicationEncoding;
 
-public class MailServiceImpl implements MailService{
+public class MailServiceImpl  extends Thread implements MailService{
 	Logger logger = LoggerFactory.getLogger(MailServiceImpl.class);
 	
 	JavaMailSender jMailSender;
+	private String to;
+	private String subject;
+	private String content;
+	
 	public JavaMailSender getjMailSender() {
 		return jMailSender;
 	}
@@ -26,26 +27,15 @@ public class MailServiceImpl implements MailService{
 	}
 
 	@Override
-	public boolean sendUserActivationMail(String user, String to, String sessionKey) {
+	public void sendUserActivationMail(String user, String to, String sessionKey) {
 		String mail = "Dear "+user+", <br><br>Thank you for joining seeka. <br><br> <b><a href='"+getLink(user,to,sessionKey)+"'> Activate </a></b> your seeka account. <br><br><br> Thank You,<br> <b> Seeka Team </b>";
-		return sendMail(to, "Seeka - User Activation", mail);
+		this.to = to;
+		this.subject = "Seeka - User Activation";
+		this.content = mail;
+		this.start();
+		 //Thread thread = new Thread(new MailServiceImpl());
+		//return sendMail(to, "Seeka - User Activation", mail);
 	}
-
-	private boolean sendMail(String to, String subject, String content) {
-		   MimeMessage message = jMailSender.createMimeMessage();
-		   try{
-				MimeMessageHelper helper = new MimeMessageHelper(message, true);
-				helper.setFrom("Seeka<noreply@seekadegree.com>");
-				helper.setTo(to);
-				helper.setSubject(subject);
-				helper.setText(content,true);
-		     }catch (MessagingException e) {
-		    	 e.printStackTrace();
-		    	 return false;
-		     }
-		     jMailSender.send(message);
-		     return true;
-     }
 
 	private String getLink(String user,String to, String sessionKey){
 		StringBuilder url = new StringBuilder();
@@ -59,7 +49,20 @@ public class MailServiceImpl implements MailService{
 				
 		return new String(url);
 	}
-	
-	
+
+	@Override
+	public void run() {
+		 MimeMessage message = jMailSender.createMimeMessage();
+		   try{
+				MimeMessageHelper helper = new MimeMessageHelper(message, true);
+				helper.setFrom("Seeka<noreply@seekadegree.com>");
+				helper.setTo(to);
+				helper.setSubject(subject);
+				helper.setText(content,true);
+		     }catch (MessagingException e) {
+		    	 e.printStackTrace();
+		     }
+		     jMailSender.send(message);
+	}
 	
 }

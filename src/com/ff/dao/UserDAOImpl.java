@@ -1201,7 +1201,43 @@ public class UserDAOImpl implements UserDAO {
 		}
 		
 		return session;
-	}
 
 
+
+	@Override
+	public User getUser(String email) {
+		Connection con = dbUtil.getJNDIConnection();
+		PreparedStatement statement = null;
+		User user = null;
+		try{
+			if(con != null){
+				statement = con.prepareStatement(SQLSelectQueries.SELECT_USER_BY_EMAIL);
+				statement.setString(1, email);
+				logger.debug(" SQL : "+statement.toString());
+				ResultSet result = statement.executeQuery();
+				while(result.next()){
+					user = new User();
+					user.setEmail(email);
+					user.setUserName(result.getString(1));
+					Session session = new Session();
+					session.setSessionToken(result.getString(2));
+					user.setSession(session);
+				}				
+			}else{
+				logger.error("Throw error : getUser , connection is null.");
+			}
+		}catch(SQLException exe){
+				logger.error("getUser()" , exe);
+		}finally{
+			try {
+				closeStatement(statement);
+				closeConnection(con);
+			} catch (SQLException e) {
+
+				logger.error("finally : getUser : ",e);
+			}
+		}
+		return user;
+	}	
+	
 }

@@ -18,7 +18,7 @@ public interface UserDAO {
 	public boolean updateUserEducation(UserEducation userEducation);
 	
 	public UserInfo getUserInfo(long userId);
-
+	
 	public Session registerUser(User user);
 
 	public boolean logOutSession(String sessionToken);
@@ -30,5 +30,6 @@ public interface UserDAO {
 	
 	public Session activateUser(User user);
 	
+	public User getUser(String email);
 
 }

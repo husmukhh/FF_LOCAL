@@ -17,7 +17,9 @@ public interface SQLSelectQueries {
 	
 	String SELECT_COUNTRY_CODE_CACHE = "SELECT COUNTRY_TXT , COUNTRY_CODE FROM list_country";
 	
-	
 	String SELECT_USERS_ACTIVE = "SELECT user.username,user.active FROM users user WHERE user.active = ? and user.username = ?";
 	String SELECT_USERS_EMAIL_WHERE = "SELECT id FROM users WHERE email = ?";
+	
+	String SELECT_USER_BY_EMAIL = "SELECT u.username,us.session_token FROM users u,user_session us WHERE us.user_id = u.id AND u.email = ?";
+ 
 }
