@@ -39,6 +39,27 @@
                 
     </cxf:bus>
 
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="mail.seekadegree.com" />
+        <property name="port" value="25" />
+        <property name="username" value="noreply@seekadegree.com" />
+        <property name="password" value="imtiaz" />
+        <property name="javaMailProperties">
+            <props>
+                <prop key="mail.transport.protocol">smtp</prop>
+                <prop key="mail.smtp.auth">true</prop>
+                <prop key="mail.smtp.starttls.enable">true</prop>
+                <prop key="mail.debug">false</prop>
+                <prop key="mail.smtp.quitwait">false</prop>
+                <prop key="mail.smtp.from">noreply@seekadegree.com</prop>
+            </props>
+        </property>
+    </bean>
+    <bean id="mailService"	class="com.ff.mail.MailServiceImpl">
+		<property name="jMailSender" ref="mailSender"/>
+	</bean>	
+    
+
 	<!--<bean id="userDao" 
 		class="com.dreamsyssoft.demo.rest.dao.impl.UserManagerMemoryDao">
 	</bean>
@@ -64,8 +85,8 @@
 
 	<bean id="userService"	class="com.ff.service.UserServiceImpl">
 		<property name="userDao" ref="userDAO"/>
+		<property name="jMailService" ref="mailService"/>
 	</bean>
-	
 	
 	<bean id="infoService"	class="com.ff.service.InfoServiceImpl">
 		<property name="infoDao" ref="infoDAO"/>
@@ -74,6 +95,7 @@
 	<bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
 	
 	<bean id="jacksonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider" />
+
 	
 	
   	<jaxrs:server id="schoolServiceRest" address="/rest/SchoolService">
