@@ -162,6 +162,22 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	public Response resendActivationMail(User userParam) {
+		Session session = new Session(); 
+		User user = userDao.getUser(userParam.getEmail());
+		if(user == null){
+			session.setStatus("0");
+			session.setMessage("Unable to find given email in seeka.");
+		}
+		else {
+			jMailService.sendUserActivationMail(user.getUserName(),user.getEmail(), session.getSessionToken());
+			session.setStatus("1");
+			session.setMessage("User activation email successfully sent.");
+		}
+		return Response.ok(session).build();
+	}
+	
+	@Override
 	public Response activateUser(String p1, String p2, String p3) {
 		User  user = new User();
 		user.setUserName(ApplicationEncoding.decodeText(p2));
@@ -172,7 +188,5 @@ public class UserServiceImpl implements UserService {
 		Session ss = userDao.activateUser(user);
 		return Response.ok(ss).build();
 	}
-	
-
 
 }

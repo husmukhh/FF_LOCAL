@@ -64,6 +64,12 @@ public interface UserService {
 	@Path("/getUserProfile")
 	public Response getUserProfile(Session sessionToken);
 	
+	@POST
+	@Consumes({"application/xml",MediaType.APPLICATION_JSON,"application/x-www-form-urlencoded"})
+	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/resendActivationMail")
+	public Response resendActivationMail( User user );
+	
 	@GET
 	@Path("/activateUser")
 	@Produces({MediaType.APPLICATION_JSON})	
